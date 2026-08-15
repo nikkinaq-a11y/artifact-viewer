@@ -3,6 +3,12 @@
 Browser rebuild of the Unreal `Artifact_Setup` viewer, so museum artifacts can be added by
 dragging in an FBX instead of repackaging the whole application.
 
+**Live: <https://nikkinaq-a11y.github.io/artifact-viewer/>**
+· repo <https://github.com/nikkinaq-a11y/artifact-viewer>
+
+Opens on any computer with nothing installed. The gallery starts **empty by design** — send a
+[gallery `.zip`](#exporting-a-gallery) alongside the link to show a collection.
+
 **Status.** The studio scene, lighting rig, camera presets, orbit, pedestal controls and the
 artifact gallery all work. **Artifacts are added by dragging a model onto the window**, persist per
 machine, and a curated gallery can be exported as a single file. It installs as an offline web app
@@ -139,7 +145,33 @@ the Windows machine. Everything is plain data so that swap touches one file.
 
 ## Packaging and sharing
 
-Two separate things: making **the app** run offline, and making **a curated gallery** portable.
+Three separate things: **publishing** the app, making it run **offline**, and making a curated
+**gallery** portable.
+
+### Publishing — already set up
+
+Live at <https://nikkinaq-a11y.github.io/artifact-viewer/>. To publish a change:
+
+```bash
+git push
+```
+
+`.github/workflows/deploy.yml` rebuilds and republishes on every push to `main`. GitHub runs the
+build on its own machines, so nothing depends on a particular laptop being switched on, and the
+link keeps working indefinitely.
+
+The repo setting was already made, recorded here in case it ever needs redoing:
+**Settings → Pages → Source → GitHub Actions**.
+
+If this is ever repeated on another account:
+
+- `base: './'` in `vite.config.ts` is what lets the app run from a project subfolder like
+  `/artifact-viewer/`. Without it every asset 404s on GitHub Pages.
+- Pushing needs a **Personal Access Token**, not an account password, and the token must include
+  the **workflow** scope — the commit contains `.github/workflows/`, which GitHub otherwise
+  refuses. GitHub Desktop or `gh auth login` sidestep this entirely.
+- In Terminal, `cd "~/path"` does **not** work; a tilde inside quotes is not expanded. Use the
+  full path.
 
 ### Installing the app (works offline)
 

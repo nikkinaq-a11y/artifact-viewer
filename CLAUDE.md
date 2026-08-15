@@ -14,6 +14,9 @@ adjusts lights and pedestal, rotates and scales the object.
 artifacts are dragged onto the window at runtime. That is the whole reason this project exists —
 protect it.
 
+**Live at <https://nikkinaq-a11y.github.io/artifact-viewer/>** — published from
+<https://github.com/nikkinaq-a11y/artifact-viewer>, rebuilt automatically on every push to `main`.
+
 ## Where things are
 
 | What | Path |
@@ -41,8 +44,14 @@ scale, dark/white background, pedestal hide, front light, drag-and-drop import (
 STL/PLY/USD), IndexedDB library with gallery panel, gallery export/import as `.zip`, PWA offline
 install, Tauri Mac app.
 
-Not done: control panel with sliders (keyboard only so far), artifact thumbnails, automatic
-decimation of huge scans, the 5-artifact seed set, deployment to a public URL.
+Deployed to GitHub Pages and verified live in a real browser. Not done: control panel with
+sliders (keyboard only so far), artifact thumbnails, automatic decimation of huge scans, the
+5-artifact seed set.
+
+**The published gallery starts empty on purpose.** Museum scans are gitignored — they belong to
+the collection, and a public repo would make them freely downloadable. Collections travel as
+exported gallery `.zip` files instead. Baking artifacts into the build is a collection-rights
+decision, not a technical one; do not do it without asking.
 
 **Scene values in `src/scene/presets.ts` are reconstructions from a reference render, not the real
 Unreal values.** The level has 13 `CineCameraActor`s and a RectLight rig whose transforms, FOV and
@@ -111,6 +120,18 @@ metres. `src/lib/units.ts` converts at the boundary.
 - **Reading the WebGL canvas gives blank** without `preserveDrawingBuffer`. Measure screenshots.
 - IndexedDB is shared across pages in one browser — clear it between test cases.
 
+**Deployment**
+- Live at <https://nikkinaq-a11y.github.io/artifact-viewer/>; `git push` to `main` rebuilds and
+  republishes via `.github/workflows/deploy.yml`. Pages source is set to GitHub Actions.
+- `base: './'` in `vite.config.ts` is what lets the app run from a project subfolder. Without it
+  every asset 404s on GitHub Pages.
+- Pushing needs a Personal Access Token with the **workflow** scope, because the repo contains
+  `.github/workflows/`. An account password will not work.
+- `cd "~/path"` does not work in a shell — a tilde inside quotes is not expanded. Use full paths;
+  this project's path contains a space.
+- Museum scans are gitignored on purpose (collection rights). The live gallery starts empty and
+  collections are shared as exported `.zip` files.
+
 **Tauri**
 - **`dragDropEnabled` must stay `false`.** Tauri's native file-drop handler swallows drops before
   the page sees them, which breaks the headline feature.
@@ -125,6 +146,7 @@ export PATH="/usr/local/bin:$HOME/.cargo/bin:$PATH"
 npm run dev                  # dev server
 npm run build                # static site -> dist/  (includes PWA service worker)
 npx tauri build              # Mac app -> src-tauri/target/release/bundle/macos/
+git push                     # rebuilds and republishes the live site
 npx tsc -b                   # typecheck
 
 node scripts/verify-import.mjs ./shots http://localhost:5178/     # import, cycle, reload, remove

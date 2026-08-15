@@ -3,6 +3,10 @@
 A plain-language explanation of what moved, what changed, and what was lost. Written for
 someone who knows the Unreal project but not web development.
 
+**Try it: <https://nikkinaq-a11y.github.io/artifact-viewer/>** — opens on any computer, nothing to
+install. It starts with an empty pedestal on purpose; drag a model file onto the window to load
+one, or import a gallery file if someone sent you a collection.
+
 ## The one-sentence version
 
 The Unreal viewer was rebuilt as a website so artifacts can be added by dragging a file onto
@@ -84,4 +88,4 @@ of the real Unreal studio and handing it to the web app.
 - Replace the reconstructed light and camera values with the real ones from the Unreal level.
 - Render a reflection image from the real studio so the gold pieces read correctly.
 - Shrink very large scans automatically on import (the 137 MB files are slow).
-- Publish it to a link so it is not only on one laptop.
+- Publish it to a link so it is not only on one laptop. **Done** — see the link at the top.
