@@ -1,0 +1,45 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Artifact Viewer",
+  "mainBinaryName": "Artifact Viewer",
+  "version": "0.1.0",
+  "identifier": "edu.duke.noma.artifactviewer",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5178",
+    "beforeDevCommand": "npm run dev -- --port 5178",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Artifact Viewer",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "dragDropEnabled": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app"],
+    "copyright": "Duke University — Nasher Museum of Art",
+    "category": "Education",
+    "shortDescription": "Museum artifact viewer",
+    "longDescription": "Displays high-resolution photogrammetry scans of museum artifacts on an adjustable pedestal in a controlled studio. Artifacts are added by dragging a model file onto the window.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}
