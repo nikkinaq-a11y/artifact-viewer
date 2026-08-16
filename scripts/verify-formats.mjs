@@ -14,7 +14,7 @@ const url = process.argv[3] ?? 'http://localhost:5178/';
 mkdirSync(outDir, { recursive: true });
 
 const Q = '/Users/nikkiquinn/Downloads/03_3D_Assets/Quimbaya_Museum_Artifacts';
-const FBX = '/Users/nikkiquinn/Documents/Documents/PhotogrammetryFiles/FBX_Files';
+const FBX = '/Users/nikkiquinn/Documents/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files';
 
 // One representative file per format, skipped when not present on this machine.
 const CASES = [

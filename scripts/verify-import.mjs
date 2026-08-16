@@ -9,7 +9,7 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const FBX_DIR = '/Users/nikkiquinn/Documents/Documents/PhotogrammetryFiles/FBX_Files';
+const FBX_DIR = '/Users/nikkiquinn/Documents/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files';
 const FILES = [
   join(FBX_DIR, '1976_91_18_Dogon_Mask_85K_poly_4K_tex.fbx'),
   join(FBX_DIR, '1975_16_4_Pulley_Figure.fbx'),
@@ -67,10 +67,15 @@ await settle(2500);
 console.log('  hud:', await hud());
 await shot('03-after-O');
 
-console.log('4. white background with B');
+console.log('4. backgrounds with B');
 await page.keyboard.press('KeyB');
 await settle(1200);
 await shot('04-white-background');
+await page.keyboard.press('KeyB');
+await settle(1200);
+await shot('04b-horizon-background');
+// B cycles dark -> white -> horizon, so returning to the default takes one more press
+// than it used to. The rest of the run expects the dark studio.
 await page.keyboard.press('KeyB');
 await settle(1000);
 

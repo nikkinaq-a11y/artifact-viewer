@@ -50,7 +50,7 @@ Matching the `BP_KeyboardControls` legend from Unreal, so muscle memory carries 
 | `H` | pedestal height (Shift+H to undo) |
 | `K` | pedestal width (Shift+K to undo) |
 | `L` | pedestal length (Shift+L to undo) |
-| `B` | background — dark / white |
+| `B` | background — dark / white / horizon |
 | `V` | show / hide pedestal (artifact stays where it is, floating) |
 | `F` | front light on / off (off by default) |
 | `Tab` | controls overlay |
@@ -60,6 +60,12 @@ scroll to zoom. `C` still jumps to the next preset, and dragging cancels an in-f
 the camera never fights the mouse.
 
 `B` and `V` have no Unreal equivalent; everything else matches the `BP_KeyboardControls` legend.
+
+`B` cycles three studio backgrounds rather than toggling two. **Dark** is the gallery default and
+**white** is for documentation-style plates. **Horizon** is the odd one out: the floor goes light
+blue and the walls grey, so the floor/wall join reads as a hard line instead of disappearing into
+one continuous field. Dark and white both paint floor and walls the same colour, which is precisely
+what hides that edge — horizon is for when you need to see where the artifact is standing.
 
 `F` is a special case. `BP_PhotoViewerController` already defines `FrontLight`, `bFrontLightOn`
 and `SavedFrontIntensity`, but binds them to no key — the logic exists dormant, and the light

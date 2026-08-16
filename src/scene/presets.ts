@@ -53,18 +53,67 @@ export const CAMERA_PRESETS: CameraPreset[] = [
 
 /**
  * Studio background. White is for documentation-style plates where the artifact needs to
- * read against a neutral field; dark is the default gallery look.
+ * read against a neutral field; dark is the default gallery look. Horizon splits the two
+ * surfaces on purpose — a light blue floor against grey walls — so the floor/wall join is
+ * unmistakable and the artifact reads as standing *somewhere* rather than floating in an
+ * even field. Dark and light both use one colour for floor and walls, which is exactly
+ * what makes that join disappear in them.
  */
-export type StudioTheme = 'dark' | 'light';
+export type StudioTheme = 'dark' | 'light' | 'horizon';
+
+/**
+ * Cycle order for B. Dark first (the gallery default), then white, then horizon — the
+ * order matters beyond taste: one press from the default still lands on white, which is
+ * what the verify scripts and any existing demo script expect.
+ */
+export const STUDIO_THEME_ORDER: StudioTheme[] = ['dark', 'light', 'horizon'];
 
 export const STUDIO_THEMES: Record<
   StudioTheme,
-  { wall: string; pedestal: string; background: string; envIntensity: number }
+  {
+    wall: string;
+    /** Floor colour. Equal to `wall` in the themes that read as one continuous field. */
+    floor: string;
+    pedestal: string;
+    background: string;
+    envIntensity: number;
+    /** Opacity of the grounding contact shadow, which needs to differ per background. */
+    contactShadowOpacity: number;
+  }
 > = {
-  dark: { wall: '#0a0a0b', pedestal: '#0c0c0e', background: '#050506', envIntensity: 0.05 },
+  dark: {
+    wall: '#0a0a0b',
+    floor: '#0a0a0b',
+    pedestal: '#0c0c0e',
+    background: '#050506',
+    envIntensity: 0.05,
+    contactShadowOpacity: 0.65,
+  },
   // A white cyclorama bounces a great deal of light in reality, so the environment is
   // lifted to keep the room from reading as flat grey card.
-  light: { wall: '#f2f2f4', pedestal: '#e8e8ea', background: '#fafafa', envIntensity: 0.85 },
+  light: {
+    wall: '#f2f2f4',
+    floor: '#f2f2f4',
+    pedestal: '#e8e8ea',
+    background: '#fafafa',
+    envIntensity: 0.85,
+    contactShadowOpacity: 0.4,
+  },
+  horizon: {
+    // Mid grey walls, deliberately darker than the floor so the two never blend under
+    // the key light. The pedestal goes darker still, or it merges into the blue.
+    wall: '#7c8087',
+    // Same hue and lightness as a plain pale blue, just carrying more chroma — enough
+    // that the floor reads as blue rather than blue-grey once the dim floor lighting and
+    // ACES tonemapping have desaturated it.
+    floor: '#acd4f1',
+    pedestal: '#5a5e64',
+    background: '#6e727a',
+    // Between dark and white: these surfaces bounce real light, but nothing like a white
+    // cyclorama, and lifting it further flattens the very contrast the theme exists for.
+    envIntensity: 0.45,
+    contactShadowOpacity: 0.5,
+  },
 };
 
 export type LightPreset = {

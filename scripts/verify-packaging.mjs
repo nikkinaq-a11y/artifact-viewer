@@ -15,7 +15,7 @@ import { join } from 'node:path';
 import { unzipSync } from 'fflate';
 
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const FBX = '/Users/nikkiquinn/Documents/Documents/PhotogrammetryFiles/FBX_Files';
+const FBX = '/Users/nikkiquinn/Documents/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files';
 const outDir = process.argv[2] ?? '.';
 const url = process.argv[3] ?? 'http://localhost:4178/';
 

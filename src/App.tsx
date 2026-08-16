@@ -96,7 +96,7 @@ function Hud() {
             <li><b>H</b> pedestal height <span className="dim">(Shift+H to undo)</span></li>
             <li><b>K</b> pedestal width <span className="dim">(Shift+K to undo)</span></li>
             <li><b>L</b> pedestal length <span className="dim">(Shift+L to undo)</span></li>
-            <li><b>B</b> background — dark / white</li>
+            <li><b>B</b> background — dark / white / horizon</li>
             <li><b>V</b> show / hide pedestal</li>
             <li><b>F</b> front light on / off</li>
           </ul>
@@ -153,7 +153,7 @@ export default function App() {
             scale={1.2}
             resolution={1024}
             blur={2.4}
-            opacity={theme === 'dark' ? 0.65 : 0.4}
+            opacity={t.contactShadowOpacity}
             far={0.6}
           />
         )}

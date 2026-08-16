@@ -9,7 +9,9 @@ const ROOM = { width: 8, depth: 8, height: 4.5, thickness: 0.1 };
 
 export function Studio() {
   const theme = useViewer((s) => s.studioTheme);
-  const wallColor = STUDIO_THEMES[theme].wall;
+  // Floor and walls are separate colours so a theme can hold them apart. Dark and light
+  // set both to the same value; horizon is the one that pulls them apart deliberately.
+  const { wall: wallColor, floor: floorColor } = STUDIO_THEMES[theme];
 
   const { width, depth, height, thickness } = ROOM;
 
@@ -18,7 +20,7 @@ export function Studio() {
       {/* Floor */}
       <mesh receiveShadow position={[0, -thickness / 2, 0]}>
         <boxGeometry args={[width, thickness, depth]} />
-        <meshStandardMaterial color={wallColor} roughness={0.92} metalness={0} />
+        <meshStandardMaterial color={floorColor} roughness={0.92} metalness={0} />
       </mesh>
 
       {/* Back wall */}

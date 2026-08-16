@@ -40,7 +40,7 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 ## Status
 
 Working: studio scene, 13 camera presets + click-drag orbit, pedestal in cm, stepped rotation,
-scale, dark/white background, pedestal hide, front light, drag-and-drop import (FBX/GLB/glTF/OBJ/
+scale, dark/white/horizon background, pedestal hide, front light, drag-and-drop import (FBX/GLB/glTF/OBJ/
 STL/PLY/USD), IndexedDB library with gallery panel, gallery export/import as `.zip`, PWA offline
 install, Tauri Mac app.
 

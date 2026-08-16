@@ -1,5 +1,10 @@
 import { create } from 'zustand';
-import { LIGHT_PRESETS, PEDESTAL_DEFAULTS, type StudioTheme } from './scene/presets';
+import {
+  LIGHT_PRESETS,
+  PEDESTAL_DEFAULTS,
+  STUDIO_THEME_ORDER,
+  type StudioTheme,
+} from './scene/presets';
 import type { ArtifactMeta } from './library/db';
 import type { SceneSettings } from './library/galleryFile';
 
@@ -33,6 +38,7 @@ type ViewerState = {
   adjustScale: (dir: 1 | -1) => void;
 
   studioTheme: StudioTheme;
+  /** Advances through STUDIO_THEME_ORDER — B is a cycle, not a two-way switch. */
   toggleStudioTheme: () => void;
 
   /**
@@ -109,7 +115,10 @@ export const useViewer = create<ViewerState>((set) => ({
 
   studioTheme: 'dark',
   toggleStudioTheme: () =>
-    set((s) => ({ studioTheme: s.studioTheme === 'dark' ? 'light' : 'dark' })),
+    set((s) => {
+      const i = STUDIO_THEME_ORDER.indexOf(s.studioTheme);
+      return { studioTheme: STUDIO_THEME_ORDER[(i + 1) % STUDIO_THEME_ORDER.length] };
+    }),
 
   pedestalVisible: true,
   togglePedestal: () => set((s) => ({ pedestalVisible: !s.pedestalVisible })),
@@ -177,7 +186,12 @@ export function applySettings(next: SceneSettings | null): void {
     // Merge rather than replace: a gallery from an older version may not know about
     // lights added since, and those should keep their defaults.
     lights: { ...s.lights, ...next.lights },
-    studioTheme: next.studioTheme === 'light' ? 'light' : 'dark',
+    // Checked against the known themes rather than trusted: the field is a plain string
+    // in the gallery format, and a file written by a newer version may name one this
+    // build has never heard of.
+    studioTheme: STUDIO_THEME_ORDER.includes(next.studioTheme as StudioTheme)
+      ? (next.studioTheme as StudioTheme)
+      : 'dark',
     objectScale: next.objectScale ?? s.objectScale,
     camIndex: next.camIndex ?? s.camIndex,
   }));
