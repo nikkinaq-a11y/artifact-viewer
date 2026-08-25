@@ -10,7 +10,7 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-const DIR = '/Users/nikkiquinn/Documents/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files';
+const DIR = '/Users/nikkiquinn/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files';
 const FBX = join(DIR, '1991_6_60_Female_Twin_Figure.fbx');
 const JPG = join(DIR, '1991_6_60_Female_Twin_Figure.jpg');
 

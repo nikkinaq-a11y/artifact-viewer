@@ -39,23 +39,58 @@ body,
 .hud {
   left: 20px;
   bottom: 20px;
-  padding: 12px 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(6px);
+  /* Padding lives on the two children instead, so the collapsed panel is exactly the
+     size of its tab — the same construction as the gallery. */
+  overflow: hidden;
 }
 
-/* The camera readout is the one value that changes as you work through the presets,
-   so it gets its own emphasised block above the rest of the specs. */
-.hud-cam {
+/* Reduced: the camera chip and nothing else, shrunk to its own width. */
+.hud.is-closed {
+  width: auto;
+}
+
+/* The camera readout is the one value that changes as you work through the presets, so
+   it gets its own emphasised block above the rest of the specs — and it doubles as the
+   control that collapses them, which is why it is a button. */
+.hud-tab {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  width: 100%;
+  padding: 11px 15px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   white-space: nowrap;
+  cursor: pointer;
+  /* .hud switches pointer events off so the readout never swallows a drag meant for the
+     canvas behind it. The one control inside it has to opt back in. */
+  pointer-events: auto;
+}
+
+.hud:not(.is-closed) .hud-tab {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.hud-tab:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.hud-chevron {
+  margin-left: auto;
+  padding-left: 12px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.hud-body {
+  padding: 9px 15px 11px;
 }
 
 .hud-cam-index {
@@ -84,7 +119,8 @@ body,
 
 .hud-key {
   display: inline-block;
-  width: 74px;
+  /* Wide enough for "Front light", the longest label — at 74px it ran into its value. */
+  width: 88px;
   color: rgba(255, 255, 255, 0.42);
 }
 
@@ -140,29 +176,42 @@ body,
   font-size: 11px;
 }
 
-/* In the white studio the overlays need to sit on light, not black. */
-.theme-light .hud,
-.theme-light .gallery {
+/* Wherever the backdrop is light — the white studio, and silhouette's lit wall — the
+   overlays have to sit on light rather than on black. App.tsx puts `on-light` on the root
+   for those themes; the theme class itself stays purely a name. */
+.on-light .hud,
+.on-light .gallery {
   background: rgba(255, 255, 255, 0.72);
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.78);
 }
 
-.theme-light .hud-cam-index,
-.theme-light .hud-cam-name {
+.on-light .hud-cam-index,
+.on-light .hud-cam-name {
   color: rgba(0, 0, 0, 0.9);
 }
 
-.theme-light .hud-key,
-.theme-light .dim,
-.theme-light .hud-cam-total,
-.theme-light .hud-hint {
+.on-light .hud-key,
+.on-light .dim,
+.on-light .hud-cam-total,
+.on-light .hud-hint {
   color: rgba(0, 0, 0, 0.45);
 }
 
-.theme-light .hud-cam,
-.theme-light .hud-hint {
+.on-light .hud:not(.is-closed) .hud-tab,
+.on-light .hud-hint {
   border-color: rgba(0, 0, 0, 0.1);
+}
+
+.on-light .hud-tab:hover { background: rgba(0, 0, 0, 0.05); }
+.on-light .hud-chevron { color: rgba(0, 0, 0, 0.45); }
+
+/* Silhouette is pure white above the floor line and pure black below it, and the lower
+   left panel straddles that join — a translucent background there reads as two different
+   panels stitched together, so this one theme gets opaque ones. */
+.theme-silhouette .hud,
+.theme-silhouette .gallery {
+  background: rgba(255, 255, 255, 0.94);
 }
 
 /* Drag, import and empty states */
@@ -255,8 +304,8 @@ body,
   color: rgba(255, 255, 255, 0.85);
 }
 
-.theme-light .empty-title { color: rgba(0, 0, 0, 0.8); }
-.theme-light .empty-sub { color: rgba(0, 0, 0, 0.5); }
+.on-light .empty-title { color: rgba(0, 0, 0, 0.8); }
+.on-light .empty-sub { color: rgba(0, 0, 0, 0.5); }
 
 .empty-pick {
   margin-top: 14px;
@@ -269,7 +318,7 @@ body,
   pointer-events: auto;
 }
 
-.theme-light .empty-pick {
+.on-light .empty-pick {
   border-color: rgba(0, 0, 0, 0.25);
   color: rgba(0, 0, 0, 0.75);
 }
@@ -347,10 +396,10 @@ body,
   color: rgba(255, 255, 255, 0.45);
 }
 
-.theme-light .gallery-tab:hover { background: rgba(0, 0, 0, 0.05); }
-.theme-light .gallery-count { background: rgba(0, 0, 0, 0.1); }
-.theme-light .gallery-chevron { color: rgba(0, 0, 0, 0.45); }
-.theme-light .gallery:not(.is-closed) .gallery-tab { border-color: rgba(0, 0, 0, 0.12); }
+.on-light .gallery-tab:hover { background: rgba(0, 0, 0, 0.05); }
+.on-light .gallery-count { background: rgba(0, 0, 0, 0.1); }
+.on-light .gallery-chevron { color: rgba(0, 0, 0, 0.45); }
+.on-light .gallery:not(.is-closed) .gallery-tab { border-color: rgba(0, 0, 0, 0.12); }
 
 /* Gallery */
 .gallery {
@@ -468,13 +517,13 @@ body,
   color: #fff;
 }
 
-.theme-light .gallery-index,
-.theme-light .gallery-meta,
-.theme-light .gallery-empty {
+.on-light .gallery-index,
+.on-light .gallery-meta,
+.on-light .gallery-empty {
   color: rgba(0, 0, 0, 0.45);
 }
 
-.theme-light .gallery-list li.is-active {
+.on-light .gallery-list li.is-active {
   background: rgba(0, 0, 0, 0.08);
 }
 .gallery-warn {
@@ -486,7 +535,7 @@ body,
   color: rgba(255, 200, 165, 0.95);
 }
 
-.theme-light .gallery-warn {
+.on-light .gallery-warn {
   background: rgba(200, 90, 30, 0.16);
   color: rgba(150, 60, 10, 0.95);
 }
@@ -523,14 +572,14 @@ body,
   color: rgba(255, 255, 255, 0.35);
 }
 
-.theme-light .gallery-add {
+.on-light .gallery-add {
   border-color: rgba(0, 0, 0, 0.12);
   color: rgba(0, 0, 0, 0.78);
 }
 
-.theme-light .gallery-add:hover { background: rgba(0, 0, 0, 0.05); }
-.theme-light .gallery-add-plus { border-color: rgba(0, 0, 0, 0.3); }
-.theme-light .gallery-add-hint { color: rgba(0, 0, 0, 0.4); }
+.on-light .gallery-add:hover { background: rgba(0, 0, 0, 0.05); }
+.on-light .gallery-add-plus { border-color: rgba(0, 0, 0, 0.3); }
+.on-light .gallery-add-hint { color: rgba(0, 0, 0, 0.4); }
 
 /* Export / import a whole curated gallery as one file */
 .gallery-pack {
@@ -565,17 +614,17 @@ body,
   cursor: default;
 }
 
-.theme-light .gallery-pack {
+.on-light .gallery-pack {
   border-color: rgba(0, 0, 0, 0.12);
 }
 
-.theme-light .gallery-pack button,
-.theme-light .gallery-pack label {
+.on-light .gallery-pack button,
+.on-light .gallery-pack label {
   border-color: rgba(0, 0, 0, 0.22);
   color: rgba(0, 0, 0, 0.78);
 }
 
-.theme-light .gallery-pack button:hover:not(:disabled),
-.theme-light .gallery-pack label:hover:not(.is-busy) {
+.on-light .gallery-pack button:hover:not(:disabled),
+.on-light .gallery-pack label:hover:not(.is-busy) {
   background: rgba(0, 0, 0, 0.05);
 }

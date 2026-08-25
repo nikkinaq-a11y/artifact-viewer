@@ -2,7 +2,13 @@ import { useEffect, useMemo, useRef } from 'react';
 import { RectAreaLightUniformsLib } from 'three/examples/jsm/lights/RectAreaLightUniformsLib.js';
 import { Object3D, RectAreaLight, SpotLight } from 'three';
 import { useViewer } from '../store';
-import { FOCUS_HEIGHT, LIGHT_PRESETS } from './presets';
+import {
+  AMBIENT_LIGHT,
+  FOCUS_HEIGHT,
+  KEY_SHADOW_INTENSITY,
+  LIGHT_PRESETS,
+  STUDIO_THEMES,
+} from './presets';
 
 /**
  * Mirrors the UE RectLight rig. RectAreaLight is three.js's analogue of Unreal's
@@ -13,8 +19,17 @@ RectAreaLightUniformsLib.init();
 
 export function Lighting() {
   const lights = useViewer((s) => s.lights);
+  const theme = useViewer((s) => s.studioTheme);
   const spot = useRef<SpotLight>(null);
   const target = useRef<Object3D>(null);
+
+  /**
+   * The silhouette theme is a lighting state, not just a background: every lamp goes out
+   * so the artifact is rendered by nothing at all and reads as a flat black cut-out
+   * against the lit wall. The switches are overridden rather than written, so leaving the
+   * theme restores whatever rig the user had set up before entering it.
+   */
+  const backlit = STUDIO_THEMES[theme].backlit ?? false;
 
   // A spotLight aims at its `target` object, which must itself be in the scene graph.
   useEffect(() => {
@@ -37,12 +52,13 @@ export function Lighting() {
   useEffect(() => {
     for (const { preset, light } of objects) {
       const s = lights[preset.id];
-      light.visible = s.on;
+      light.visible = s.on && !backlit;
       light.intensity = s.intensity;
     }
-  }, [lights, objects]);
+  }, [lights, objects, backlit]);
 
-  const keyOn = lights.key?.on ?? true;
+  const keyOn = !backlit && (lights.key?.on ?? true);
+  const frontOn = !backlit && (lights.front?.on ?? false);
 
   return (
     <>
@@ -66,7 +82,9 @@ export function Lighting() {
         penumbra={0.9}
         decay={2}
         distance={12}
-        intensity={keyOn ? 26 : 0}
+        intensity={
+          keyOn ? (frontOn ? KEY_SHADOW_INTENSITY.withFront : KEY_SHADOW_INTENSITY.base) : 0
+        }
         color="#fff4e8"
         castShadow
         shadow-mapSize-width={2048}
@@ -77,9 +95,15 @@ export function Lighting() {
         shadow-camera-far={12}
       />
 
-      {/* Very low ambient stands in for the floor/wall inter-reflection Lumen provides.
-          Kept near-black so the dark studio look survives. */}
-      <ambientLight intensity={0.03} color="#8090a8" />
+      {/* Very low ambient stands in for the floor/wall inter-reflection Lumen provides,
+          and is the single control that decides whether the darkest shadow is black or
+          merely dark — see AMBIENT_LIGHT. It rises with the front light so that switching
+          F on opens the shadows across the whole object rather than only the face the
+          front light happens to reach, and goes out entirely under a backlit theme. */}
+      <ambientLight
+        intensity={backlit ? 0 : frontOn ? AMBIENT_LIGHT.withFront : AMBIENT_LIGHT.base}
+        color={AMBIENT_LIGHT.color}
+      />
     </>
   );
 }

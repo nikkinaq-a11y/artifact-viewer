@@ -44,34 +44,59 @@ Matching the `BP_KeyboardControls` legend from Unreal, so muscle memory carries 
 | Key | Action |
 |---|---|
 | `C` | switch camera view (Shift+C goes back) |
+| `D` | camera distance — standard / far, holding the view you are on |
 | `O` | cycle object (Shift+O goes back) |
 | `R` | rotate 30°, one of 12 steps around a full turn (Shift+R to undo) |
 | `P` | object scale (Shift+P to undo) |
 | `H` | pedestal height (Shift+H to undo) |
 | `K` | pedestal width (Shift+K to undo) |
 | `L` | pedestal length (Shift+L to undo) |
-| `B` | background — dark / white / horizon |
+| `B` | scene — dark / white / horizon / silhouette |
 | `V` | show / hide pedestal (artifact stays where it is, floating) |
-| `F` | front light on / off (off by default) |
+| `F` | front light on / off (off by default; no effect in silhouette) |
 | `Tab` | controls overlay |
 
 **Click and drag to revolve** around the artifact from wherever the current preset put you;
 scroll to zoom. `C` still jumps to the next preset, and dragging cancels an in-flight blend so
 the camera never fights the mouse.
 
-`B` and `V` have no Unreal equivalent; everything else matches the `BP_KeyboardControls` legend.
+`B`, `V` and `D` have no Unreal equivalent; everything else matches the `BP_KeyboardControls`
+legend.
 
-`B` cycles three studio backgrounds rather than toggling two. **Dark** is the gallery default and
-**white** is for documentation-style plates. **Horizon** is the odd one out: the floor goes light
-blue and the walls grey, so the floor/wall join reads as a hard line instead of disappearing into
-one continuous field. Dark and white both paint floor and walls the same colour, which is precisely
-what hides that edge — horizon is for when you need to see where the artifact is standing.
+`D` is a second framing of the view you are already on rather than more presets. It pushes the
+camera back along its own line of sight and leaves the focal length alone, so the shot reads as the
+same one taken from further away instead of a wider one. It works on a view you have orbited or
+scrolled to as well — it dollies whatever is on screen and never changes which preset is selected.
+
+`B` cycles four studio scenes rather than toggling two. **Dark** is the gallery default and
+**white** is for documentation-style plates. **Horizon** puts a light blue floor against grey
+walls, so the floor/wall join reads as a hard line instead of disappearing into one continuous
+field. Dark and white both paint floor and walls the same colour, which is precisely what hides
+that edge — horizon is for when you need to see where the artifact is standing.
+
+**Silhouette** is a lighting state as much as a background. The back wall becomes an unlit white
+panel and the entire light rig switches off, so nothing lights the artifact and it reads as a flat
+black cut-out against the glow — profile, openwork and negative space, with no surface detail to
+compete. Both halves are required: a lit artifact in front of a lightbox is not a silhouette, and
+an unlit one against a dark wall is just invisible. The light switches are overridden rather than
+written, so leaving the mode restores whatever rig was set up before entering it — which is also
+why `F` does nothing while silhouette is up.
 
 `F` is a special case. `BP_PhotoViewerController` already defines `FrontLight`, `bFrontLightOn`
 and `SavedFrontIntensity`, but binds them to no key — the logic exists dormant, and the light
 itself lives in `LV_ReflectiveObjectCapture` rather than the baseline level. It is reproduced here,
 off by default, on `F`. Front-on lighting flattens form, so it is for reading surface detail and
 inscriptions rather than general use.
+
+The base rig is deliberately contrasty: the key is held below where a pale scan clips, and the
+fill, bounce and ambient are all small enough that the side facing away from the key falls to true
+black. `F` is the way out of that — the front panel is wide enough to wrap round the sides, and the
+ambient rises with it, so switching it on takes the whole object to an even medium reading light
+with no part of it still at black.
+The lower-left **scene readout** collapses: click the camera chip at its top and the panel reduces
+to that chip alone, so the artifact has the frame to itself without losing the view you are on.
+Click it again to expand. Like the gallery, it is not on a key.
+
 The **gallery** is deliberately not on a key — it sits behind a permanent tab in the top-right
 corner, so it is discoverable without knowing a shortcut.
 
@@ -98,7 +123,7 @@ resolve. Those import untextured and are flagged **no texture** in the gallery.
 matched by filename, stored with the artifact, and reused on reload. Nothing needs re-exporting.
 OBJ works the same way — include the `.mtl` and its images in the selection.
 
-In `~/Documents/Documents/PhotogrammetryFiles/FBX_Files`, 14 of 21 embed their texture. These 7
+In `~/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files`, 14 of 21 embed their texture. These 7
 need their `.jpg` dragged alongside:
 
 ```
@@ -253,7 +278,7 @@ node scripts/verify-import.mjs ./shots http://localhost:5178/
 node scripts/verify-formats.mjs ./shots http://localhost:5178/
 
 # Which FBX files carry their texture inside them
-node scripts/check-fbx-textures.mjs ~/Documents/Documents/PhotogrammetryFiles/FBX_Files
+node scripts/check-fbx-textures.mjs ~/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files
 
 # Regenerate the app icons
 node scripts/make-icons.mjs

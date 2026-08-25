@@ -29,6 +29,8 @@ export type SceneSettings = {
   studioTheme: string;
   objectScale: number;
   camIndex: number;
+  /** Optional: galleries written before the D distance toggle existed have no value here. */
+  camDistance?: number;
 };
 
 type ManifestArtifact = {

@@ -88,7 +88,7 @@ temporary. Unless you need it working in Unreal within the next few weeks, put i
 
 ## Source of truth
 
-**Use the network drive.** The local copy at `~/Documents/Documents/Duke/Artifact Work/` is stale
+**Use the network drive.** The local copy at `~/Documents/Duke/Artifact Work/` is stale
 (March 1) and missing most of what follows.
 
 ```
@@ -144,7 +144,7 @@ transforms and FOV verbatim), `Cube`–`Cube5` walls, `Floor`, `DirectionalLight
 
 ### Source meshes
 
-`~/Documents/Documents/PhotogrammetryFiles/FBX_Files/` — verified **binary FBX 7.x with textures
+`~/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files/` — verified **binary FBX 7.x with textures
 embedded inline** (JPEG data present in the FBX; `.fbm` folders and sidecar `.jpg`s are extracted
 duplicates). A lone dropped `.fbx` is self-contained, and three.js `FBXLoader` parses embedded
 textures natively. **This is what makes the headline feature work.**

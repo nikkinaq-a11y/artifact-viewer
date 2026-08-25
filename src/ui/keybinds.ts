@@ -10,9 +10,11 @@ import { useViewer } from '../store';
  * R steps the artifact 30° per press around a full turn rather than toggling a
  * continuous spin, so each angle is repeatable.
  *
- * B and V have no Unreal equivalent: background theme, and hiding the pedestal so the
- * artifact floats. The gallery is deliberately *not* bound to a key — it lives behind a
- * permanent tab in the corner so it is discoverable without knowing a shortcut.
+ * B, V and D have no Unreal equivalent: background theme, hiding the pedestal so the
+ * artifact floats, and a second further-back framing of whatever view is already up.
+ * The gallery and the scene readout are deliberately *not* bound to keys — both live
+ * behind a permanent tab in their corner, so they are discoverable without knowing a
+ * shortcut, and neither is something you reach for mid-demo.
  */
 export function useKeybinds() {
   useEffect(() => {
@@ -25,6 +27,10 @@ export function useKeybinds() {
       switch (e.code) {
         case 'KeyC':
           e.shiftKey ? s.prevCam() : s.nextCam();
+          break;
+        case 'KeyD':
+          // Distance only — the view in use is left exactly where it is.
+          s.cycleCamDistance();
           break;
         case 'KeyO':
           s.stepObject(dir);

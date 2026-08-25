@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import {
+  CAMERA_DISTANCES,
   LIGHT_PRESETS,
   PEDESTAL_DEFAULTS,
   STUDIO_THEME_ORDER,
@@ -16,6 +17,14 @@ type ViewerState = {
   camIndex: number;
   nextCam: () => void;
   prevCam: () => void;
+
+  /**
+   * Index into CAMERA_DISTANCES. Held apart from camIndex on purpose: D is a second
+   * framing of whatever view is already up, so changing it must not disturb which preset
+   * is in use.
+   */
+  camDistance: number;
+  cycleCamDistance: () => void;
 
   lights: Record<string, { on: boolean; intensity: number }>;
   toggleLight: (id: string) => void;
@@ -66,6 +75,14 @@ type ViewerState = {
   showGallery: boolean;
   toggleGallery: () => void;
 
+  /**
+   * Collapses the lower-left readout to its camera chip, the same bargain the gallery tab
+   * makes with its count: the panel gets out of the way of the artifact without the one
+   * value that changes as you work through the presets disappearing with it.
+   */
+  showHud: boolean;
+  toggleHud: () => void;
+
   showHelp: boolean;
   toggleHelp: () => void;
 };
@@ -76,6 +93,10 @@ export const useViewer = create<ViewerState>((set) => ({
   camIndex: 0,
   nextCam: () => set((s) => ({ camIndex: s.camIndex + 1 })),
   prevCam: () => set((s) => ({ camIndex: s.camIndex - 1 })),
+
+  camDistance: 0,
+  cycleCamDistance: () =>
+    set((s) => ({ camDistance: (s.camDistance + 1) % CAMERA_DISTANCES.length })),
 
   lights: Object.fromEntries(
     LIGHT_PRESETS.map((l) => [l.id, { on: l.on, intensity: l.intensity }]),
@@ -156,6 +177,9 @@ export const useViewer = create<ViewerState>((set) => ({
   showGallery: false,
   toggleGallery: () => set((s) => ({ showGallery: !s.showGallery })),
 
+  showHud: true,
+  toggleHud: () => set((s) => ({ showHud: !s.showHud })),
+
   showHelp: false,
   toggleHelp: () => set((s) => ({ showHelp: !s.showHelp })),
 }));
@@ -174,6 +198,7 @@ export function captureSettings(): SceneSettings {
     studioTheme: s.studioTheme,
     objectScale: s.objectScale,
     camIndex: s.camIndex,
+    camDistance: s.camDistance,
   };
 }
 
@@ -194,5 +219,13 @@ export function applySettings(next: SceneSettings | null): void {
       : 'dark',
     objectScale: next.objectScale ?? s.objectScale,
     camIndex: next.camIndex ?? s.camIndex,
+    // Indexed straight into CAMERA_DISTANCES, and a gallery written by another build can
+    // name a step this one does not have, so it is range-checked rather than defaulted.
+    camDistance:
+      Number.isInteger(next.camDistance) &&
+      (next.camDistance as number) >= 0 &&
+      (next.camDistance as number) < CAMERA_DISTANCES.length
+        ? (next.camDistance as number)
+        : s.camDistance,
   }));
 }

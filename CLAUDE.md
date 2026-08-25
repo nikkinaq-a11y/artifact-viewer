@@ -17,15 +17,25 @@ protect it.
 **Live at <https://nikkinaq-a11y.github.io/artifact-viewer/>** — published from
 <https://github.com/nikkinaq-a11y/artifact-viewer>, rebuilt automatically on every push to `main`.
 
+**There is a sister app: `../artifact-reflection-web/`.** It rebuilds `LV_ReflectiveObjectCapture` —
+an object facing a sheet of dark acrylic, seen as a real planar reflection laid over a print. Both
+apps are kept, both install, both run at once, and they deliberately share controls, import pipeline
+and gallery format. **Do not converge them, and do not add the other one's features here.** This app
+rebuilds `LV_BasicObjectCapture1` and has no acrylic and no reflection in it by design.
+
+If a request is about reflections, the acrylic sheet, prints, or anything on port 5179, it is about
+that project and not this one — check there before concluding a feature was never built.
+
 ## Where things are
 
 | What | Path |
 |---|---|
-| This project | `~/Documents/Documents/Duke/Artifact Work/artifact-viewer-web/` |
-| Source FBX scans | `~/Documents/Documents/PhotogrammetryFiles/FBX_Files/` (21 files, 3–16 MB) |
-| Larger scans, no materials | `~/Documents/Documents/PhotogrammetryFiles/No Material/` (incl. 111–137 MB) |
+| This project | `~/Documents/Duke/Artifact Work/artifact-viewer-web/` |
+| Sister app (reflection) | `~/Documents/Duke/Artifact Work/artifact-reflection-web/` — its own `CLAUDE.md` has the detail |
+| Source FBX scans | `~/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files/` (21 files, 3–16 MB) |
+| Larger scans, no materials | `~/Documents/Duke/Artifact Work/PhotogrammetryFiles/No Material/` (incl. 111–137 MB) |
 | Unreal project (authoritative) | `/Volumes/Nicole_Quinn/NOMA General/NOMA Unreal/Artifact_Setup/` — Duke SMB share, mount before use |
-| Unreal project (stale local copy) | `~/Documents/Documents/Duke/Artifact Work/NOMA Unreal/` — March, do not trust |
+| Unreal project (stale local copy) | `~/Documents/Duke/Artifact Work/NOMA Unreal/` — March, do not trust |
 
 The folder was renamed from `NOMA/` to `Artifact Work/` mid-build. Paths now contain a space —
 quote them. The user runs Unreal on a **separate Windows machine**, not this Mac.
@@ -39,10 +49,18 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 
 ## Status
 
-Working: studio scene, 13 camera presets + click-drag orbit, pedestal in cm, stepped rotation,
-scale, dark/white/horizon background, pedestal hide, front light, drag-and-drop import (FBX/GLB/glTF/OBJ/
-STL/PLY/USD), IndexedDB library with gallery panel, gallery export/import as `.zip`, PWA offline
-install, Tauri Mac app.
+Working: studio scene, 15 camera presets + a second further-back framing of each on `D` +
+click-drag orbit, pedestal in cm, stepped rotation, scale, dark/white/horizon/silhouette scene
+modes, collapsible scene readout, pedestal hide, front light, drag-and-drop import (FBX/GLB/glTF/
+OBJ/STL/PLY/USD), IndexedDB library with gallery panel, gallery export/import as `.zip`, PWA
+offline install, Tauri Mac app.
+
+**Silhouette is a lighting state, not just a background.** `STUDIO_THEMES.silhouette.backlit`
+switches the back wall to an unlit white panel *and* switches the whole rig off in `Lighting.tsx`;
+either half alone does not produce a silhouette. `overlaysOnLight` is a separate flag on the same
+record — it puts the `on-light` class on the root so the HUD and gallery get dark-on-light styling,
+which both the white studio and silhouette need. `.theme-light` is still emitted for the light
+theme because `verify-packaging.mjs` asserts on it, but it no longer carries any styling.
 
 Deployed to GitHub Pages and verified live in a real browser. Not done: control panel with
 sliders (keyboard only so far), artifact thumbnails, automatic decimation of huge scans, the
@@ -152,7 +170,7 @@ npx tsc -b                   # typecheck
 node scripts/verify-import.mjs ./shots http://localhost:5178/     # import, cycle, reload, remove
 node scripts/verify-formats.mjs ./shots http://localhost:5178/    # formats, pedestal, gallery tab
 node scripts/verify-packaging.mjs ./shots http://localhost:4178/  # export/import + offline (needs dist served)
-node scripts/check-fbx-textures.mjs ~/Documents/Documents/PhotogrammetryFiles/FBX_Files
+node scripts/check-fbx-textures.mjs ~/Documents/Duke/Artifact Work/PhotogrammetryFiles/FBX_Files
 ```
 
 Always typecheck and re-run at least `verify-import.mjs` after changes; the puppeteer scripts catch
