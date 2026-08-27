@@ -9,21 +9,23 @@ dragging in an FBX instead of repackaging the whole application.
 Opens on any computer with nothing installed. The gallery starts **empty by design** — send a
 [gallery `.zip`](#exporting-a-gallery) alongside the link to show a collection.
 
-**Status.** The studio scene, lighting rig, camera presets, orbit, pedestal controls and the
-artifact gallery all work. **Artifacts are added by dragging a model onto the window**, persist per
-machine, and a curated gallery can be exported as a single file. It installs as an offline web app
-and builds as a Mac app. Still to do: an on-screen control panel with sliders, artifact thumbnails,
-automatic decimation of very large scans, the seed set, and deployment to a public URL.
+**Status.** The studio scene, lighting rig, 15 camera presets (each with a second further-back
+framing on `D`), orbit, pedestal controls and the artifact gallery all work. Four scene modes on
+`B`, including a **silhouette** mode that backlights the wall and switches the rig off. **Artifacts
+are added by dragging a model onto the window**, persist per machine, and a curated gallery can be
+exported as a single file. It installs as an offline web app, builds as a Mac app, and is deployed
+to the public link above. Still to do: an on-screen control panel with sliders, artifact
+thumbnails, automatic decimation of very large scans, and the seed set.
 
 ### Documentation
 
 | File | For |
 |---|---|
+| **README (this file)** | **Start here to *use* the viewer** — the live link, [controls](#controls), formats, packaging, troubleshooting |
 | **[CLAUDE.md](CLAUDE.md)** | **Start here in a new Claude session** — status, architecture, and every gotcha found so far |
 | [PLAN.md](PLAN.md) | The full plan: findings from the Unreal project, decisions and why, phases |
 | [UNREAL-TO-WEB.md](UNREAL-TO-WEB.md) | Plain-language explanation of the translation — safe to send a coworker |
 | [UNREAL-GLTFRUNTIME-OPTION.md](UNREAL-GLTFRUNTIME-OPTION.md) | The route not taken: staying in Unreal |
-| README (this file) | Running it, controls, formats, packaging, troubleshooting |
 
 ## Running it
 

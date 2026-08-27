@@ -32,7 +32,7 @@ pedestal, some lights, and fixed camera angles. There is no character, no physic
 | `BP_AdjustablePedestal` | `src/scene/Pedestal.tsx` | Still measured in centimetres, so the numbers match |
 | `BP_RoomRig` (walls, floor) | `src/scene/Studio.tsx` | |
 | `BP_RotatingObject` | `src/scene/ArtifactMesh.tsx` | Now steps in fixed 30° increments instead of spinning |
-| 13 `CineCameraActor`s | `src/scene/presets.ts` | A simple list of positions — adding an angle is one line |
+| 13 `CineCameraActor`s | `src/scene/presets.ts` | A simple list of positions — adding an angle is one line. The web version is up to 15, each also available from further back |
 | `RectLight` actors | `src/scene/Lighting.tsx` | Web has a near-identical rectangular light |
 | `BP_KeyboardControls` | `src/ui/keybinds.ts` | Same keys, so muscle memory carries over |
 | The 24 pre-placed artifact actors | `src/library/` | **This is the part that changed most — see below** |
@@ -79,7 +79,16 @@ of the real Unreal studio and handing it to the web app.
 - Runs from a link, with nothing to install.
 - Reads more file types than the Unreal setup did: FBX, GLB, glTF, OBJ, STL, PLY and USD.
 - Click and drag to revolve around an object, on top of the fixed camera angles.
-- A white-background mode for documentation-style images.
+- More camera angles than the Unreal level had — 15, including three level straight-on views at
+  different heights — and a `D` key that retakes any of them from further back without changing
+  the angle.
+- Four scene modes on `B` instead of one background: the dark gallery default, a white background
+  for documentation-style images, a horizon mode that shows where the artifact is standing, and a
+  **silhouette** mode that lights the back wall and switches the rig off so the artifact reads as
+  a black cut-out — useful for profile and openwork.
+- A front light on `F` that takes the object from the contrasty gallery rig to an even medium
+  light for reading surface detail and inscriptions.
+- The on-screen readout collapses out of the way when you want the frame to yourself.
 - Can still be turned into an installable Mac or Windows app later if wanted. The reverse was
   never possible — an Unreal project can never become a website.
 
