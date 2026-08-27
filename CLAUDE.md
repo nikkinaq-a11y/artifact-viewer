@@ -42,6 +42,14 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 
 ## Docs
 
+- **[Artifact-Viewer-Handbook.pdf](Artifact-Viewer-Handbook.pdf)** — the non-technical guide for
+  museum staff: the address, installing it as an offline app, adding objects, sharing a gallery.
+  This is the document a curator gets handed, so it is the one that matters most when a user-facing
+  control changes. **It has no source file.** Its metadata shows it was printed from an HTML page by
+  headless Chrome, and that HTML was not kept, so it cannot be edited — updating it means rebuilding
+  the HTML and re-printing. **It is currently out of date:** its key table says thirteen camera
+  angles and three backgrounds, from before the 15 presets, the `D` distance toggle and silhouette
+  mode. Regenerate it before handing it to anyone.
 - **[PLAN.md](PLAN.md)** — full plan: findings from the Unreal project, decisions and why, phases
 - **[README.md](README.md)** — how to run, controls, formats, packaging, troubleshooting
 - **[UNREAL-TO-WEB.md](UNREAL-TO-WEB.md)** — plain-language translation, safe to hand to a coworker

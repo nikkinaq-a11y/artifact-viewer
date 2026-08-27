@@ -6,6 +6,11 @@ dragging in an FBX instead of repackaging the whole application.
 **Live: <https://nikkinaq-a11y.github.io/artifact-viewer/>**
 · repo <https://github.com/nikkinaq-a11y/artifact-viewer>
 
+📖 **Not a developer? Read the [Artifact Viewer Handbook](Artifact-Viewer-Handbook.pdf)** — the
+plain-English guide for museum staff: the address to visit, how to install it as an offline app
+with its own icon, how to drag objects in, and how to send someone a collection. It needs nothing
+in this repository and assumes no technical background.
+
 Opens on any computer with nothing installed. The gallery starts **empty by design** — send a
 [gallery `.zip`](#exporting-a-gallery) alongside the link to show a collection.
 
@@ -21,7 +26,8 @@ thumbnails, automatic decimation of very large scans, and the seed set.
 
 | File | For |
 |---|---|
-| **README (this file)** | **Start here to *use* the viewer** — the live link, [controls](#controls), formats, packaging, troubleshooting |
+| **[Artifact Viewer Handbook.pdf](Artifact-Viewer-Handbook.pdf)** | **Start here if you are not a developer** — opening the viewer, installing it offline, adding objects, sharing a collection. Written for museum staff. Its key list predates the `D` distance toggle and silhouette mode; [Controls](#controls) below is current |
+| **README (this file)** | **Start here to *use* the viewer as a developer** — the live link, [controls](#controls), formats, packaging, troubleshooting |
 | **[CLAUDE.md](CLAUDE.md)** | **Start here in a new Claude session** — status, architecture, and every gotcha found so far |
 | [PLAN.md](PLAN.md) | The full plan: findings from the Unreal project, decisions and why, phases |
 | [UNREAL-TO-WEB.md](UNREAL-TO-WEB.md) | Plain-language explanation of the translation — safe to send a coworker |
