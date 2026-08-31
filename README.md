@@ -26,7 +26,7 @@ thumbnails, automatic decimation of very large scans, and the seed set.
 
 | File | For |
 |---|---|
-| **[Artifact Viewer Handbook.pdf](Artifact-Viewer-Handbook.pdf)** | **Start here if you are not a developer** — opening the viewer, installing it offline, adding objects, sharing a collection. Written for museum staff. Its key list predates the `D` distance toggle and silhouette mode; [Controls](#controls) below is current |
+| **[Artifact Viewer Handbook.pdf](Artifact-Viewer-Handbook.pdf)** | **Start here if you are not a developer** — opening the viewer, installing it offline, adding objects, sharing a collection. Written for museum staff, and current — fifteen camera angles, `D` for distance, and silhouette. Source: [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html) |
 | **README (this file)** | **Start here to *use* the viewer as a developer** — the live link, [controls](#controls), formats, packaging, troubleshooting |
 | **[CLAUDE.md](CLAUDE.md)** | **Start here in a new Claude session** — status, architecture, and every gotcha found so far |
 | [PLAN.md](PLAN.md) | The full plan: findings from the Unreal project, decisions and why, phases |

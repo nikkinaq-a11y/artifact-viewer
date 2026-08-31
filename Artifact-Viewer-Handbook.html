@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}</style>
+<title>Artifact Viewer Handbook</title>
+</head>
+<body>
+<style>
+  /* ---- Tokens: complete light palette on bare :root ------------------------
+     Neutrals carry a slight blue bias, taken from the viewer's own studio —
+     cool gallery light rather than a neutral grey card. Accent is the horizon
+     floor colour, darkened until it holds contrast on a pale ground.        */
+  :root {
+    --ground:      #eceff2;
+    --surface:     #ffffff;
+    --surface-alt: #e3e8ec;
+    --ink:         #14181c;
+    --ink-soft:    #565f66;
+    --ink-faint:   #7b848b;
+    --rule:        #cfd7dd;
+    --rule-strong: #a8b4bc;
+    --accent:      #1f5f92;
+    --accent-soft: #acd4f1;
+    --wall:        #7c8087;
+    --warn-bg:     #f6ecd8;
+    --warn-ink:    #6b4d12;
+    --warn-rule:   #d9bd7d;
+
+    --display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+    --body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /* The same stack the viewer's own on-screen readout uses. */
+    --utility: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0e1114;
+      --surface:     #171b1f;
+      --surface-alt: #1e242a;
+      --ink:         #e7ecef;
+      --ink-soft:    #a3adb5;
+      --ink-faint:   #7d878f;
+      --rule:        #2b3238;
+      --rule-strong: #414b53;
+      --accent:      #7fbbe8;
+      --accent-soft: #24445c;
+      --wall:        #6a6e75;
+      --warn-bg:     #2c2411;
+      --warn-ink:    #e8cf95;
+      --warn-rule:   #6b5722;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0e1114;
+    --surface:     #171b1f;
+    --surface-alt: #1e242a;
+    --ink:         #e7ecef;
+    --ink-soft:    #a3adb5;
+    --ink-faint:   #7d878f;
+    --rule:        #2b3238;
+    --rule-strong: #414b53;
+    --accent:      #7fbbe8;
+    --accent-soft: #24445c;
+    --wall:        #6a6e75;
+    --warn-bg:     #2c2411;
+    --warn-ink:    #e8cf95;
+    --warn-rule:   #6b5722;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 6vw, 4.5rem) clamp(1.15rem, 5vw, 2rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  /* ---- The horizon rule ---------------------------------------------------
+     Grey above, pale blue below: the same split the viewer's horizon
+     background makes between wall and floor. Used as the section divider.  */
+  .horizon {
+    height: 6px;
+    border: 0;
+    margin: 0;
+    background: linear-gradient(to bottom, var(--wall) 0 3px, var(--accent-soft) 3px 6px);
+  }
+
+  header { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  .eyebrow {
+    font-family: var(--utility);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: clamp(2.1rem, 6vw, 3rem);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .standfirst {
+    font-size: 1.1rem;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 34rem;
+  }
+
+  section { display: flex; flex-direction: column; gap: 1.15rem; }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 1.6rem;
+    line-height: 1.25;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0;
+    letter-spacing: 0.005em;
+  }
+
+  p { margin: 0; max-width: 38rem; }
+  p + p { margin-top: -0.35rem; }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible,
+  .cta:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* ---- The address --------------------------------------------------------
+     The one thing most readers need, so it gets the page's only large slab. */
+  .address {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .address-label {
+    font-family: var(--utility);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .cta {
+    font-family: var(--utility);
+    font-size: clamp(0.9rem, 3.1vw, 1.15rem);
+    font-weight: 600;
+    color: var(--accent);
+    word-break: break-all;
+    line-height: 1.4;
+  }
+
+  .address-note { font-size: 0.92rem; color: var(--ink-soft); margin: 0; }
+
+  /* ---- Choice panels: browser vs installed -------------------------------- */
+  .choice {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+
+  .choice > div {
+    background: var(--surface);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .choice h3 { font-size: 1.02rem; }
+  .choice p { font-size: 0.94rem; color: var(--ink-soft); }
+
+  .verdict {
+    font-family: var(--utility);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ---- Numbered procedures ------------------------------------------------
+     Numbered because these genuinely are ordered steps — do them out of
+     order and the install does not appear.                                  */
+  ol.steps {
+    list-style: none;
+    counter-reset: step;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  ol.steps > li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: 0.9rem;
+    align-items: baseline;
+  }
+
+  /* Every child of a step stacks in the text column; the number is pinned to
+     the first row of the narrow column. Without this, a step's second
+     paragraph falls into the 2rem number column and wraps a word per line. */
+  ol.steps > li > * { grid-column: 2; }
+
+  ol.steps > li::before {
+    grid-column: 1;
+    grid-row: 1;
+    content: counter(step, decimal-leading-zero);
+    font-family: var(--utility);
+    font-size: 0.78rem;
+    color: var(--accent);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  ol.steps p { font-size: 0.97rem; }
+  ol.steps p.sub { color: var(--ink-soft); font-size: 0.9rem; margin-top: 0.2rem; }
+
+  ul.plain {
+    margin: 0;
+    padding-left: 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 38rem;
+  }
+  ul.plain li { font-size: 0.97rem; }
+  ul.plain li::marker { color: var(--rule-strong); }
+
+  /* ---- Tables ------------------------------------------------------------- */
+  .scroller { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
+
+  th, td {
+    text-align: left;
+    padding: 0.62rem 0.9rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  thead th {
+    font-family: var(--utility);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    background: var(--surface-alt);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+  td.key { width: 1%; white-space: nowrap; }
+
+  kbd {
+    font-family: var(--utility);
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: var(--surface-alt);
+    border: 1px solid var(--rule-strong);
+    border-radius: 2px;
+    padding: 0.08rem 0.4rem;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .fmt { font-family: var(--utility); font-size: 0.86rem; color: var(--ink); }
+
+  /* ---- Notes -------------------------------------------------------------- */
+  .note {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 0.9rem 1.1rem;
+    font-size: 0.94rem;
+    color: var(--ink-soft);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .note strong { color: var(--ink); font-weight: 600; }
+
+  .caution {
+    background: var(--warn-bg);
+    border-left: 3px solid var(--warn-rule);
+    color: var(--warn-ink);
+    padding: 0.9rem 1.1rem;
+    font-size: 0.94rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .caution strong { font-weight: 700; }
+
+  /* ---- Troubleshooting ---------------------------------------------------- */
+  dl.trouble { margin: 0; display: flex; flex-direction: column; gap: 1.15rem; }
+  dl.trouble dt { font-weight: 600; font-size: 0.98rem; margin-bottom: 0.2rem; }
+  dl.trouble dd { margin: 0; font-size: 0.95rem; color: var(--ink-soft); max-width: 38rem; }
+
+  footer {
+    font-size: 0.88rem;
+    color: var(--ink-faint);
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header>
+    <div class="eyebrow">Nasher Museum · Photogrammetry Collection</div>
+    <h1>Artifact Viewer Handbook</h1>
+    <p class="standfirst">
+      How to open the artifact viewer, keep it on your computer like any other app, and put
+      your own scanned objects into it. No software to buy, nothing to set up.
+    </p>
+    <hr class="horizon">
+  </header>
+
+  <section>
+    <h2>Open it</h2>
+    <p>
+      The viewer is a web page. You do not download or install anything to use it — you visit
+      an address, the same way you would visit any website. Here it is:
+    </p>
+
+    <div class="address">
+      <div class="address-label">The address</div>
+      <a class="cta" href="https://nikkinaq-a11y.github.io/artifact-viewer/">
+        nikkinaq-a11y.github.io/artifact-viewer
+      </a>
+      <p class="address-note">
+        Works on any reasonably modern Mac or Windows computer, in Chrome, Edge, Safari or
+        Firefox. Nothing is uploaded and no account is needed.
+      </p>
+    </div>
+
+    <p>
+      You will see an empty pedestal in a dark room. <strong>That is correct.</strong> The
+      viewer arrives empty on purpose, because the museum's scans are not published on the
+      open internet. You add objects yourself, or open a collection someone sends you — both
+      are covered below.
+    </p>
+
+    <div class="note">
+      <span>
+        <strong>Where the address comes from.</strong> The viewer is stored on GitHub, a
+        website developers use to keep their work. The GitHub page at
+        <a href="https://github.com/nikkinaq-a11y/artifact-viewer">github.com/nikkinaq-a11y/artifact-viewer</a>
+        holds the instructions a computer follows to build the viewer; the address above is
+        the finished, usable version. If someone sends you the GitHub page and you only see
+        folders and files, you are in the workshop rather than the gallery — use the address
+        above instead.
+      </span>
+    </div>
+  </section>
+
+  <hr class="horizon">
+
+  <section>
+    <h2>Two ways to use it</h2>
+    <p>
+      Both run exactly the same viewer. The difference is whether it lives in a browser tab
+      or behaves like an installed program.
+    </p>
+
+    <div class="choice">
+      <div>
+        <div class="verdict">Nothing to install</div>
+        <h3>In a browser tab</h3>
+        <p>
+          Visit the address and use it. Best for showing someone quickly, or on a computer
+          that is not yours.
+        </p>
+        <p>Needs an internet connection the first time.</p>
+      </div>
+      <div>
+        <div class="verdict">Recommended if it is your computer</div>
+        <h3>Installed as an app</h3>
+        <p>
+          Sits in your Dock or Start menu with its own icon, opens in its own window with no
+          address bar, and works with no internet at all.
+        </p>
+        <p>Takes about ten seconds to set up, once.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="horizon">
+
+  <section>
+    <h2>Install it as an app</h2>
+    <p>
+      This does not download an installer or ask for a password. The browser keeps a copy of
+      the viewer on your computer and gives it an icon.
+    </p>
+
+    <h3>On Mac or Windows, using Chrome or Edge</h3>
+    <ol class="steps">
+      <li>
+        <p>Open the address in Chrome or Edge.</p>
+      </li>
+      <li>
+        <p>
+          Look at the right-hand end of the address bar for a small install icon — a screen
+          with a downward arrow.
+        </p>
+        <p class="sub">
+          If you cannot see it: open the browser's three-dot menu and look for
+          <em>Cast, save and share → Install page as app</em>, or simply <em>Install</em>.
+        </p>
+      </li>
+      <li>
+        <p>Click it, then click <strong>Install</strong>.</p>
+      </li>
+      <li>
+        <p>
+          The viewer opens in its own window and now appears in your Applications folder or
+          Start menu. Open it from there in future.
+        </p>
+      </li>
+    </ol>
+
+    <h3>On a Mac, using Safari</h3>
+    <ol class="steps">
+      <li><p>Open the address in Safari.</p></li>
+      <li><p>From the menu bar choose <strong>File → Add to Dock</strong>.</p></li>
+      <li><p>Confirm the name. It now sits in your Dock like any other app.</p></li>
+    </ol>
+
+    <div class="note">
+      <span>
+        <strong>It genuinely works offline.</strong> Once installed, the viewer opens on a
+        plane, in a storage room, or in a gallery with no guest wi-fi. Your objects are kept
+        on your own computer, not on a server.
+      </span>
+    </div>
+
+    <div class="caution">
+      <span>
+        <strong>There is no separate download file yet.</strong> You may have expected a
+        <span class="fmt">.dmg</span> or <span class="fmt">.exe</span> to download from
+        GitHub. A double-clickable Mac application can be built from this project, but one
+        has not been posted for download, so the browser install above is currently the way
+        to get the viewer onto a computer. It gives you the same thing: an icon, its own
+        window, and offline use.
+      </span>
+    </div>
+  </section>
+
+  <hr class="horizon">
+
+  <section>
+    <h2>Put an object on the pedestal</h2>
+    <p>
+      <strong>Drag a 3D file from your desktop onto the viewer window and let go.</strong>
+      That is the whole procedure. The object is measured, sized to the pedestal and lit
+      automatically. It stays in your collection until you remove it, including after you
+      close and reopen the viewer.
+    </p>
+    <p>
+      If you would rather pick from a list, click the <strong>Gallery</strong> tab in the
+      top-right corner, then <strong>+ Add artifact</strong>.
+    </p>
+
+    <h3>File types it accepts</h3>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Type</th><th>What to expect</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="key"><span class="fmt">.glb</span> <span class="fmt">.gltf</span></td>
+            <td>The most reliable. Everything the object needs is inside one file.</td>
+          </tr>
+          <tr>
+            <td class="key"><span class="fmt">.fbx</span></td>
+            <td>
+              Usually fine. Some carry their colour image separately — see the grey-object
+              note below.
+            </td>
+          </tr>
+          <tr>
+            <td class="key"><span class="fmt">.obj</span></td>
+            <td>
+              Drag the <span class="fmt">.obj</span>, its <span class="fmt">.mtl</span> and
+              its image files in together, all selected at once.
+            </td>
+          </tr>
+          <tr>
+            <td class="key"><span class="fmt">.ply</span></td>
+            <td>Common from scanners. Colour is usually built into the surface.</td>
+          </tr>
+          <tr>
+            <td class="key"><span class="fmt">.stl</span></td>
+            <td>Shape only. This format cannot store colour, so it always looks plain.</td>
+          </tr>
+          <tr>
+            <td class="key"><span class="fmt">.usdz</span> <span class="fmt">.usd</span></td>
+            <td>Supported, but less thoroughly tested than the rest.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span>
+        <strong>If an object arrives grey or black.</strong> Nothing is broken. Some files
+        record only the <em>location</em> of their colour image on the computer that made
+        them — a path your computer cannot follow. Select the 3D file <em>and</em> its
+        <span class="fmt">.jpg</span> together and drag them in as one selection. The colour
+        appears, and it is remembered from then on.
+      </span>
+    </div>
+  </section>
+
+  <hr class="horizon">
+
+  <section>
+    <h2>Send someone a collection</h2>
+    <p>
+      Your objects live on your computer only. To let a colleague see the same set, you send
+      them a collection file.
+    </p>
+
+    <ol class="steps">
+      <li>
+        <p>
+          Open the <strong>Gallery</strong> tab and click <strong>Export gallery</strong>.
+          You get a single <span class="fmt">.zip</span> file.
+        </p>
+        <p class="sub">
+          It contains every object, its colour images, and the way you had the scene
+          arranged — pedestal size, lighting, background, camera.
+        </p>
+      </li>
+      <li>
+        <p>Send them that file, along with the address at the top of this page.</p>
+        <p class="sub">
+          Five masks come to roughly 25&nbsp;MB, which emails comfortably. Very large scans
+          will need a shared drive instead.
+        </p>
+      </li>
+      <li>
+        <p>
+          They open the viewer, click <strong>Gallery → Import gallery</strong>, and choose
+          the file. They see exactly what you staged.
+        </p>
+      </li>
+    </ol>
+
+    <div class="caution">
+      <span>
+        <strong>Importing replaces what is already there.</strong> A collection arrives as
+        the curated set it was meant to be, rather than mixing into someone's existing
+        objects. Export your own collection first if you want to keep it.
+      </span>
+    </div>
+  </section>
+
+  <hr class="horizon">
+
+  <section>
+    <h2>Moving around</h2>
+    <p>
+      <strong>Click and drag</strong> to walk around the object. <strong>Scroll</strong> to
+      move closer or further away. Everything else is a single key — press it, and press it
+      again with <kbd>Shift</kbd> held to go the other way.
+    </p>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Key</th><th>What it does</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="key"><kbd>C</kbd></td><td>Next camera angle — fifteen fixed views around the object</td></tr>
+          <tr><td class="key"><kbd>D</kbd></td><td>Camera distance — the same view taken from further back, then back again</td></tr>
+          <tr><td class="key"><kbd>O</kbd></td><td>Next object in your collection</td></tr>
+          <tr><td class="key"><kbd>R</kbd></td><td>Turn the object 30° on its base</td></tr>
+          <tr><td class="key"><kbd>P</kbd></td><td>Make the object larger</td></tr>
+          <tr><td class="key"><kbd>H</kbd></td><td>Pedestal taller</td></tr>
+          <tr><td class="key"><kbd>K</kbd></td><td>Pedestal wider</td></tr>
+          <tr><td class="key"><kbd>L</kbd></td><td>Pedestal deeper</td></tr>
+          <tr><td class="key"><kbd>B</kbd></td><td>Scene — dark room, then white, then horizon, then silhouette</td></tr>
+          <tr><td class="key"><kbd>V</kbd></td><td>Hide the pedestal, leaving the object floating</td></tr>
+          <tr><td class="key"><kbd>F</kbd></td><td>Front light on or off — good for reading surface detail. No effect in silhouette, where the whole rig is off</td></tr>
+          <tr><td class="key"><kbd>Tab</kbd></td><td>Show this list on screen. The readout in the corner collapses too — click the camera chip at the lower left</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      The four scenes suit different jobs: <strong>dark</strong> is the gallery look,
+      <strong>white</strong> is for documentation photographs, and <strong>horizon</strong>
+      puts a pale blue floor against grey walls so you can see exactly where the object is
+      standing.
+    </p>
+    <p>
+      <strong>Silhouette</strong> is not simply a fourth background. The back wall becomes a
+      lit white panel and every lamp in the room goes out, so nothing falls on the object at
+      all and it reads as a flat black cut-out against the glow — an outline for comparing
+      profiles, not a surface for reading detail. Because the rig is off, <kbd>F</kbd> does
+      nothing here, and the on-screen readout says so.
+    </p>
+    <p>
+      <kbd>D</kbd> is a second framing rather than more angles. It holds whichever view you
+      are on and moves the camera back, keeping the lens the same, so the pair reads as one
+      shot from further away instead of a wider one.
+    </p>
+  </section>
+
+  <hr class="horizon">
+
+  <section>
+    <h2>When something looks wrong</h2>
+
+    <dl class="trouble">
+      <dt>The pedestal is empty and nothing happens</dt>
+      <dd>
+        The viewer starts empty by design. Drag a 3D file onto the window, or import a
+        collection file from a colleague.
+      </dd>
+
+      <dt>My objects have vanished</dt>
+      <dd>
+        Objects are stored by the browser, so clearing your browsing data or history removes
+        them, and they do not follow you to another computer or another browser. Keep your
+        original files, and export a collection file for anything you would hate to rebuild.
+      </dd>
+
+      <dt>A large scan is slow, or the tab freezes</dt>
+      <dd>
+        Very large scans — over roughly 100&nbsp;MB — are demanding. Close other tabs and try
+        again. If a particular file always fails, it likely needs to be reduced in size
+        before it can be used comfortably.
+      </dd>
+
+      <dt>The object is on its side or far too small</dt>
+      <dd>
+        The viewer sizes and seats each object automatically, but it cannot know which way up
+        a scan was saved. Use <kbd>R</kbd> to turn it and <kbd>P</kbd> to resize.
+      </dd>
+
+      <dt>I opened the GitHub page and it is full of files</dt>
+      <dd>
+        That is the workshop, not the gallery. Use the address at the top of this page.
+      </dd>
+    </dl>
+  </section>
+
+  <hr class="horizon">
+
+  <footer>
+    <div>Viewer: <a href="https://nikkinaq-a11y.github.io/artifact-viewer/">nikkinaq-a11y.github.io/artifact-viewer</a></div>
+    <div>Source: <a href="https://github.com/nikkinaq-a11y/artifact-viewer">github.com/nikkinaq-a11y/artifact-viewer</a></div>
+    <div>Rebuilt from the Unreal Engine <span class="fmt">Artifact_Setup</span> viewer, so artifacts can be added by dragging in a file.</div>
+  </footer>
+
+</div>
+
+</body></html>
