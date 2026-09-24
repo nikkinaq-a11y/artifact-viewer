@@ -32,7 +32,7 @@ pedestal, some lights, and fixed camera angles. There is no character, no physic
 | `BP_AdjustablePedestal` | `src/scene/Pedestal.tsx` | Still measured in centimetres, so the numbers match |
 | `BP_RoomRig` (walls, floor) | `src/scene/Studio.tsx` | |
 | `BP_RotatingObject` | `src/scene/ArtifactMesh.tsx` | Now steps in fixed 30° increments instead of spinning |
-| 13 `CineCameraActor`s | `src/scene/presets.ts` | A simple list of positions — adding an angle is one line. The web version is up to 15, each also available from further back |
+| 13 `CineCameraActor`s | `src/scene/presets.ts` | A simple list of positions — adding an angle is one line. The web version keeps 7 front-facing ones (the object rotates instead), each also available from further back |
 | `RectLight` actors | `src/scene/Lighting.tsx` | Web has a near-identical rectangular light |
 | `BP_KeyboardControls` | `src/ui/keybinds.ts` | Same keys, so muscle memory carries over |
 | The 24 pre-placed artifact actors | `src/library/` | **This is the part that changed most — see below** |

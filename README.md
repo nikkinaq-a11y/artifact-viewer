@@ -14,7 +14,7 @@ in this repository and assumes no technical background.
 Opens on any computer with nothing installed. The gallery starts **empty by design** — send a
 [gallery `.zip`](#exporting-a-gallery) alongside the link to show a collection.
 
-**Status.** The studio scene, lighting rig, 15 camera presets (each with a second further-back
+**Status.** The studio scene, lighting rig, 7 front-facing camera presets (each with a second further-back
 framing on `D`), orbit, pedestal controls and the artifact gallery all work. Four scene modes on
 `B`, including a **silhouette** mode that backlights the wall and switches the rig off. **Artifacts
 are added by dragging a model onto the window**, persist per machine, and a curated gallery can be
@@ -26,7 +26,7 @@ thumbnails, automatic decimation of very large scans, and the seed set.
 
 | File | For |
 |---|---|
-| **[Artifact Viewer Handbook.pdf](Artifact-Viewer-Handbook.pdf)** | **Start here if you are not a developer** — opening the viewer, installing it offline, adding objects, sharing a collection. Written for museum staff, and current — fifteen camera angles, `D` for distance, and silhouette. Source: [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html) |
+| **[Artifact Viewer Handbook.pdf](Artifact-Viewer-Handbook.pdf)** | **Start here if you are not a developer** — opening the viewer, installing it offline, adding objects, sharing a collection. Written for museum staff, and current — seven front-facing camera angles, `D` for distance, and silhouette. Source: [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html) |
 | **README (this file)** | **Start here to *use* the viewer as a developer** — the live link, [controls](#controls), formats, packaging, troubleshooting |
 | **[CLAUDE.md](CLAUDE.md)** | **Start here in a new Claude session** — status, architecture, and every gotcha found so far |
 | [PLAN.md](PLAN.md) | The full plan: findings from the Unreal project, decisions and why, phases |

@@ -27,10 +27,13 @@ const F: [number, number, number] = [0, FOCUS_HEIGHT, 0];
 const FRONT_SHIFT = 0.2;
 
 /**
- * Ordered so cycling sweeps one side at a time instead of swinging across the artifact
- * on every press: the straight-on front trio, then the left group working outward, then
- * the right group working outward, then the centred/special views. Only one crossing
- * (Left → Upper Right) remains in a full cycle.
+ * Front-facing views only. The artifact turns on R, so the camera never has to travel
+ * round it to show another side — orbiting to the side views just duplicated what a
+ * rotation step already gives, with the lighting rig no longer where it was designed to
+ * be seen from. Every preset here sits on the centre line (x = 0) looking along -Z.
+ *
+ * Ordered from the straight-on trio outward: level, then looking down and up, then the
+ * close and wide framings.
  */
 export const CAMERA_PRESETS: CameraPreset[] = [
   { name: 'Front', position: [0, FOCUS_HEIGHT, 2.2], target: F, fov: 28 },
@@ -55,28 +58,18 @@ export const CAMERA_PRESETS: CameraPreset[] = [
     fov: 30,
   },
 
-  // Left group — outward from centre
-  { name: 'Upper Left', position: [-1.3, 2.0, 1.5], target: F, fov: 30 },
-  { name: 'Front Left', position: [-1.5, 1.35, 1.7], target: F, fov: 28 },
-  { name: 'Raking Left', position: [-2.0, 1.15, 0.8], target: F, fov: 26 },
-  { name: 'Left', position: [-2.2, 1.25, 0], target: F, fov: 28 },
-
-  // Right group — outward from centre
-  { name: 'Upper Right', position: [1.3, 2.0, 1.5], target: F, fov: 30 },
-  { name: 'Front Right', position: [1.5, 1.35, 1.7], target: F, fov: 28 },
-  { name: 'Raking Right', position: [2.0, 1.15, 0.8], target: F, fov: 26 },
-  { name: 'Right', position: [2.2, 1.25, 0], target: F, fov: 28 },
-
-  // Centred views
-  { name: 'Close', position: [0, 1.3, 1.1], target: F, fov: 22 },
+  // Tilted views — looking down onto and up at the artifact from the front.
   { name: 'Upper', position: [0, 2.3, 1.6], target: F, fov: 30 },
   { name: 'Lower', position: [0, 0.75, 1.9], target: F, fov: 30 },
-  { name: 'Wide', position: [0.6, 1.5, 3.2], target: [0, 1.1, 0], fov: 38 },
+
+  // Framings
+  { name: 'Close', position: [0, 1.3, 1.1], target: F, fov: 22 },
+  { name: 'Wide', position: [0, 1.5, 3.2], target: [0, 1.1, 0], fov: 38 },
 ];
 
 /**
  * D holds the view and changes only how far back it is taken from — a second framing of
- * every preset rather than 15 more presets. The factor scales the camera's distance from
+ * every preset rather than twice as many presets. The factor scales the camera's distance from
  * whatever it is looking at, and the FOV is deliberately left alone: matching focal
  * length is what makes the pair read as the same shot from further away rather than a
  * different, wider one.

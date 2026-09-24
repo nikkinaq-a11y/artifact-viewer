@@ -45,7 +45,7 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 - **[Artifact-Viewer-Handbook.pdf](Artifact-Viewer-Handbook.pdf)** — the non-technical guide for
   museum staff: the address, installing it as an offline app, adding objects, sharing a gallery.
   This is the document a curator gets handed, so it is the one that matters most when a user-facing
-  control changes. Current as of 2026-08-31: fifteen camera angles, the `D` distance toggle, and all
+  control changes. Current as of 2026-09-24: seven front-facing camera angles, the `D` distance toggle, and all
   four scenes including silhouette.
   **Its source is [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html)** — edit that, never
   the PDF, then re-print with:
@@ -60,7 +60,7 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 
 ## Status
 
-Working: studio scene, 15 camera presets + a second further-back framing of each on `D` +
+Working: studio scene, 7 front-facing camera presets (the object turns on R, so the camera stays in front) + a second further-back framing of each on `D` +
 click-drag orbit, pedestal in cm, stepped rotation, scale, dark/white/horizon/silhouette scene
 modes, collapsible scene readout, pedestal hide, front light, drag-and-drop import (FBX/GLB/glTF/
 OBJ/STL/PLY/USD), IndexedDB library with gallery panel, gallery export/import as `.zip`, PWA
