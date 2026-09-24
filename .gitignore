@@ -42,3 +42,6 @@ artifact-gallery-*.zip
 *.njsproj
 *.sln
 *.sw?
+
+# Starter gallery scans for local runs and desktop builds only — see src/library/seed.ts.
+public/seed/

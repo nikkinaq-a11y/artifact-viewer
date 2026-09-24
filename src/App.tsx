@@ -22,6 +22,8 @@ import { cm } from './lib/units';
 import { DropZone } from './import/DropZone';
 import { GalleryPanel } from './library/GalleryPanel';
 import { listArtifactMeta } from './library/db';
+import { seedLibraryOnce } from './library/seed';
+import { useImportFiles } from './import/useImport';
 import './App.css';
 
 function Hud() {
@@ -160,11 +162,23 @@ export default function App() {
   const theme = useViewer((s) => s.studioTheme);
   const pedestalVisible = useViewer((s) => s.pedestalVisible);
   const setArtifacts = useViewer((s) => s.setArtifacts);
+  const selectObject = useViewer((s) => s.selectObject);
+  const importFiles = useImportFiles();
 
-  // Restore the library on load — artifacts persist per machine, not per session.
+  // Restore the library on load — artifacts persist per machine, not per session. A
+  // first run on a machine with a local starter gallery loads that instead (seed.ts).
   useEffect(() => {
-    void listArtifactMeta().then(setArtifacts);
-  }, [setArtifacts]);
+    void (async () => {
+      const list = await listArtifactMeta();
+      if (list.length === 0 && (await seedLibraryOnce(importFiles))) {
+        setArtifacts(await listArtifactMeta());
+        // Each import jumps to itself; start on the first of the set, not the last.
+        selectObject(0);
+        return;
+      }
+      setArtifacts(list);
+    })();
+  }, [setArtifacts, selectObject, importFiles]);
 
   const t = STUDIO_THEMES[theme];
 

@@ -82,6 +82,14 @@ the collection, and a public repo would make them freely downloadable. Collectio
 exported gallery `.zip` files instead. Baking artifacts into the build is a collection-rights
 decision, not a technical one; do not do it without asking.
 
+**Local builds start with four scans; the published site does not.** `public/seed/` holds the
+Dogon Mask, Gelede Mask, Ashanti Fertility Doll and Fertility Sculpture plus a `seed.json` listing
+them, and is gitignored. `src/library/seed.ts` imports them on a browser's first run when the
+library is empty — in `npm run dev`, a local build and the Tauri app. GitHub Pages builds from the
+repo, where the folder does not exist, so the public gallery stays empty. Decided with Nikki
+2026-09-24: seeding is local-only until the museum clears scans for public release. Seeding happens
+once per browser (`localStorage` `seed-loaded-v1`); clear that key to reseed.
+
 **Scene values in `src/scene/presets.ts` are reconstructions from a reference render, not the real
 Unreal values.** The level has 13 `CineCameraActor`s and a RectLight rig whose transforms, FOV and
 intensities should replace them verbatim once captured on the Windows machine. It is all plain data
