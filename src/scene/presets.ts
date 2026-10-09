@@ -16,6 +16,13 @@ export type CameraPreset = {
   target: [number, number, number];
   /** vertical FOV, degrees */
   fov: number;
+  /**
+   * Offers the camera-height slider for this view. The slider raises and lowers camera and
+   * target together, so the angle the view is looking down or up at is kept exactly and
+   * only where it is taken from moves. Only the tilted views want it: on a level view it
+   * would just re-create the rise/fall variants that were deliberately cut.
+   */
+  heightAdjustable?: boolean;
 };
 
 /** Height of the artifact's visual centre above the floor, metres. Pedestal top + half artifact. */
@@ -23,44 +30,22 @@ export const FOCUS_HEIGHT = 1.25;
 
 const F: [number, number, number] = [0, FOCUS_HEIGHT, 0];
 
-/** How far the level front views rise and fall from the artifact's centre, metres. */
-const FRONT_SHIFT = 0.2;
-
 /**
  * Front-facing views only. The artifact turns on R, so the camera never has to travel
  * round it to show another side — orbiting to the side views just duplicated what a
  * rotation step already gives, with the lighting rig no longer where it was designed to
  * be seen from. Every preset here sits on the centre line (x = 0) looking along -Z.
  *
- * Ordered from the straight-on trio outward: level, then looking down and up, then the
- * close and wide framings.
+ * One straight-on view at the artifact's own height, then looking down and up, then the
+ * close and wide framings. The straight-on view used to come as a high / mid / low trio;
+ * the high and low versions were cut once the tilted views got their own height slider.
  */
 export const CAMERA_PRESETS: CameraPreset[] = [
   { name: 'Front', position: [0, FOCUS_HEIGHT, 2.2], target: F, fov: 28 },
 
-  // Straight-on variants. The camera rises and falls but the optical axis stays level —
-  // camera height and target height move together — so these are a rise/fall shift, not a
-  // tilt: the artifact travels down or up the frame rather than being looked down or up
-  // at. That is the whole point of them, and it is why the target is not F.
-  //
-  // Pulled back slightly and widened a touch against the plain Front view, because a
-  // shifted subject needs the extra frame to stay clear of the edge.
-  {
-    name: 'Front High',
-    position: [0, FOCUS_HEIGHT + FRONT_SHIFT, 2.3],
-    target: [0, FOCUS_HEIGHT + FRONT_SHIFT, 0],
-    fov: 30,
-  },
-  {
-    name: 'Front Low',
-    position: [0, FOCUS_HEIGHT - FRONT_SHIFT, 2.3],
-    target: [0, FOCUS_HEIGHT - FRONT_SHIFT, 0],
-    fov: 30,
-  },
-
   // Tilted views — looking down onto and up at the artifact from the front.
-  { name: 'Upper', position: [0, 2.3, 1.6], target: F, fov: 30 },
-  { name: 'Lower', position: [0, 0.75, 1.9], target: F, fov: 30 },
+  { name: 'Upper', position: [0, 2.3, 1.6], target: F, fov: 30, heightAdjustable: true },
+  { name: 'Lower', position: [0, 0.75, 1.9], target: F, fov: 30, heightAdjustable: true },
 
   // Framings
   { name: 'Close', position: [0, 1.3, 1.1], target: F, fov: 22 },
@@ -68,15 +53,29 @@ export const CAMERA_PRESETS: CameraPreset[] = [
 ];
 
 /**
- * D holds the view and changes only how far back it is taken from — a second framing of
- * every preset rather than twice as many presets. The factor scales the camera's distance from
- * whatever it is looking at, and the FOV is deliberately left alone: matching focal
- * length is what makes the pair read as the same shot from further away rather than a
+ * Range of the camera-height slider on the tilted views, metres either side of the
+ * authored height. Because the angle is held, the artifact travels down or up the frame as
+ * the camera rises or falls; at 60 cm it was already at the frame edge, so the travel stops
+ * where it is still comfortably in shot.
+ */
+export const CAMERA_HEIGHT_RANGE = 0.35;
+
+/**
+ * D holds the view and changes only how far it is taken from — framings of every preset
+ * rather than three times as many presets. The factor scales the camera's distance from
+ * whatever it is looking at, and the FOV is deliberately left alone: matching focal length
+ * is what makes the set read as the same shot from nearer or further rather than a
  * different, wider one.
+ *
+ * Far is the default and the first stop; D then moves in. The steps shrink the distance by
+ * about a third each time, so the move in is a real change rather than a nudge — Near puts
+ * the Close preset about 65 cm from the artifact. MIN_DISTANCE in CameraRig has to sit
+ * below the nearest of these, or OrbitControls clamps the camera back out.
  */
 export const CAMERA_DISTANCES: { name: string; factor: number }[] = [
-  { name: 'Standard', factor: 1 },
-  { name: 'Far', factor: 1.45 },
+  { name: 'Far', factor: 1.34 },
+  { name: 'Mid', factor: 0.92 },
+  { name: 'Near', factor: 0.6 },
 ];
 
 /** Safe lookup — the index is cycled unbounded and can arrive out of range from a gallery file. */
@@ -86,13 +85,14 @@ export function cameraDistance(i: number) {
 }
 
 /**
- * Studio background. White is for documentation-style plates where the artifact needs to
- * read against a neutral field; dark is the default gallery look. Horizon splits the two
- * surfaces on purpose — a light blue floor against grey walls — so the floor/wall join is
- * unmistakable and the artifact reads as standing *somewhere* rather than floating in an
- * even field. Dark and light both use one colour for floor and walls, which is exactly
- * what makes that join disappear in them. Silhouette is the odd one out: it is a lighting
- * state as much as a background, and `backlit` is what carries that to the rig.
+ * Studio background. There are no walls: the artifact stands on an open floor that fades
+ * into a flat backdrop colour, so `background` *is* the backdrop. White is for
+ * documentation-style plates where the artifact needs to read against a neutral field;
+ * dark is the default gallery look. Horizon holds floor and backdrop apart on purpose — a
+ * light blue floor against grey — so the horizon line is unmistakable and the artifact
+ * reads as standing *somewhere* rather than floating in an even field. Silhouette is the
+ * odd one out: it is a lighting state as much as a background, and `backlit` is what
+ * carries that to the rig.
  */
 export type StudioTheme = 'dark' | 'light' | 'horizon' | 'silhouette';
 
@@ -107,31 +107,35 @@ export const STUDIO_THEME_ORDER: StudioTheme[] = ['dark', 'light', 'horizon', 's
 export const STUDIO_THEMES: Record<
   StudioTheme,
   {
-    wall: string;
-    /** Floor colour. Equal to `wall` in the themes that read as one continuous field. */
     floor: string;
     pedestal: string;
+    /** The backdrop. Also the fog colour, so the far floor fades into it with no edge. */
     background: string;
+    /**
+     * Fog distances for this theme, metres, overriding FLOOR_FOG. Where the fade sits sets
+     * how soft the horizon is: the further out and narrower the band, the closer to the
+     * true horizon it lands and the sharper the line.
+     */
+    fog?: { near: number; far: number };
     envIntensity: number;
     /** Opacity of the grounding contact shadow, which needs to differ per background. */
     contactShadowOpacity: number;
     /**
      * The HUD and gallery sit on a light backdrop in this theme and need dark-on-light
      * styling. Kept separate from the theme name because two very different themes want
-     * it — the white cyclorama, and silhouette's glowing wall.
+     * it — the white cyclorama, and silhouette's white field.
      */
     overlaysOnLight?: boolean;
     /**
-     * Turns the back wall into an unlit white panel and switches the whole light rig off,
-     * so nothing lights the artifact and it falls to black against the glow. Both halves
-     * are required: a lit artifact in front of a lightbox is not a silhouette, and an
-     * unlit artifact in front of a dark wall is just invisible.
+     * Removes the floor, leaves the white backdrop untouched by tone mapping, and switches
+     * the whole light rig off, so nothing lights the artifact and it falls to black against
+     * pure white. Both halves are required: a lit artifact in front of white is not a
+     * silhouette, and an unlit artifact in front of something dark is just invisible.
      */
     backlit?: boolean;
   }
 > = {
   dark: {
-    wall: '#0a0a0b',
     floor: '#0a0a0b',
     pedestal: '#0c0c0e',
     background: '#050506',
@@ -144,7 +148,6 @@ export const STUDIO_THEMES: Record<
   // A white cyclorama bounces a great deal of light in reality, so the environment is
   // lifted to keep the room from reading as flat grey card.
   light: {
-    wall: '#f2f2f4',
     floor: '#f2f2f4',
     pedestal: '#e8e8ea',
     background: '#fafafa',
@@ -153,39 +156,48 @@ export const STUDIO_THEMES: Record<
     overlaysOnLight: true,
   },
   horizon: {
-    // Mid grey walls, deliberately darker than the floor so the two never blend under
-    // the key light. The pedestal goes darker still, or it merges into the blue.
-    wall: '#7c8087',
     // Same hue and lightness as a plain pale blue, just carrying more chroma — enough
     // that the floor reads as blue rather than blue-grey once the dim floor lighting and
     // ACES tonemapping have desaturated it.
     floor: '#acd4f1',
+    // Mid grey backdrop, deliberately darker than the floor so the two never blend at the
+    // horizon. The pedestal goes darker still, or it merges into the blue.
     pedestal: '#5a5e64',
-    background: '#6e727a',
+    background: '#7c8087',
+    // The horizon line is the point of this theme, so the floor fades out late and over a
+    // short band — a crisp line rather than the soft dissolve the other themes want.
+    fog: { near: 26, far: 44 },
     // Between dark and white: these surfaces bounce real light, but nothing like a white
     // cyclorama, and lifting it further flattens the very contrast the theme exists for.
     envIntensity: 0.45,
     contactShadowOpacity: 0.5,
   },
   silhouette: {
-    // The side walls, floor and pedestal are never lit in this theme, so these colours
-    // are close to irrelevant — they all resolve to black. Kept dark rather than black so
-    // that nothing turns to mud if a future change puts any light back into the room.
-    wall: '#141416',
+    // There is no floor in this theme and the pedestal is never lit, so it resolves to
+    // black. Kept dark rather than black so nothing turns to mud if a future change puts
+    // any light back into the room. `floor` is unused while `backlit` holds.
     floor: '#141416',
     pedestal: '#0b0b0c',
-    // Matches the glowing wall so the wide and far framings, which can see past the wall's
-    // edges, do not band the frame with a dark border around the lightbox.
     background: '#ffffff',
     // Any image-based lighting at all would put a rim of detail back on the artifact and
     // stop it reading as a flat cut-out, which is the entire look.
     envIntensity: 0,
     contactShadowOpacity: 0.3,
     backlit: true,
-    // The lit wall fills most of the frame, so dark overlay panels wash out against it.
+    // The white field fills the frame, so dark overlay panels wash out against it.
     overlaysOnLight: true,
   },
 };
+
+/**
+ * Fog in the backdrop colour, metres from the camera: where it starts and where the floor
+ * has fully dissolved into the background. Starts past the furthest camera position (Wide
+ * at Far, about 4.7 m) so the artifact and pedestal are never tinted by it.
+ */
+export const FLOOR_FOG = { near: 6, far: 24 };
+
+/** Floor size, metres. Has to run past the furthest fog `far` in every theme, or its edge shows. */
+export const FLOOR_SIZE = 120;
 
 export type LightPreset = {
   id: string;
@@ -193,6 +205,8 @@ export type LightPreset = {
   position: [number, number, number];
   /** Euler XYZ in radians — rect lights emit along -Z of their local frame. */
   rotation: [number, number, number];
+  /** Aim point, metres. When set it replaces `rotation`: the panel is turned to face it. */
+  aim?: [number, number, number];
   /** metres */
   width: number;
   height: number;
@@ -258,7 +272,7 @@ export const LIGHT_PRESETS: LightPreset[] = [
     // Mirrors the FrontLight / bFrontLightOn / SavedFrontIntensity variables that exist in
     // BP_PhotoViewerController but are bound to no key — the logic is there, dormant, and
     // the light itself lives in LV_ReflectiveObjectCapture rather than the baseline level.
-    // Off by default here for the same reason; F switches it on.
+    // Off by default here for the same reason; L cycles to it (studio → front → dramatic).
     //
     // Front-on lighting flattens form, so it is a deliberate choice for reading surface
     // detail and inscriptions rather than a general-purpose key light. Wide enough to
@@ -280,6 +294,25 @@ export const LIGHT_PRESETS: LightPreset[] = [
     on: false,
   },
   {
+    // The dramatic key. Never on alongside the studio rig — Lighting.tsx swaps the whole
+    // rig for this one when it is switched on (see DRAMATIC_LIGHTING). A small panel high
+    // to the side and only slightly forward of the artifact: small makes the shadow edge
+    // hard, and coming from the side rather than the front is what splits the object into
+    // a lit half and a black half instead of the studio rig's graded turn.
+    id: 'dramatic',
+    label: 'Dramatic',
+    position: [-1.35, 1.95, 0.25],
+    rotation: [0, 0, 0],
+    aim: [0, FOCUS_HEIGHT, 0],
+    width: 0.32,
+    height: 0.38,
+    // Rect-light intensity is per unit area, and this panel is a fifth the size of the
+    // studio key — the high number is what it takes to make the lit side genuinely bright.
+    intensity: 220,
+    color: '#ffe8cc',
+    on: false,
+  },
+  {
     id: 'bounce',
     label: 'Bounce',
     // Stands in for the Lumen bounce off the pedestal top that three.js has no GI for.
@@ -296,13 +329,13 @@ export const LIGHT_PRESETS: LightPreset[] = [
 ];
 
 /**
- * Ambient stand-in for the floor/wall inter-reflection Lumen provides.
+ * Ambient stand-in for the inter-reflection Lumen provides.
  *
  * `base` is almost nothing on purpose: the base studio is meant to leave the artifact's
  * shadow side at true black, and ambient is the one light that reaches everywhere, so any
  * real amount of it lifts those shadows off zero and there is no getting them back.
  *
- * `withFront` is the other half of the front light. Switching F on is meant to read as
+ * `withFront` is the other half of the front light. Switching the front light on is meant to read as
  * the room being brought up to an even working level for reading surface detail — not as
  * one more lamp aimed at the front — so the general level rises with it and the shadows
  * come off black everywhere, including the faces the front light never reaches.
@@ -311,7 +344,7 @@ export const AMBIENT_LIGHT = {
   color: '#8090a8',
   base: 0.012,
   // Enough to take the unlit faces off black, held below the point where it starts
-  // lifting the pedestal and the walls along with the artifact.
+  // lifting the pedestal and the floor along with the artifact.
   withFront: 0.07,
 };
 
@@ -328,6 +361,38 @@ export const KEY_SHADOW_INTENSITY = {
   base: 17,
   withFront: 11,
 };
+
+/**
+ * The third light setting, after the studio rig and the front light: one hard side key, a
+ * strong cool rim from behind, and nothing at all filling the shadow side. L cycles
+ * studio → front → dramatic.
+ *
+ * It replaces the studio rig rather than adding to it — the fill, the bounce and the base
+ * ambient are exactly what keep the studio look's shadows graded, and the point here is
+ * that half the object falls straight to black. Only the rim stays, pushed harder, so the
+ * dark side still has an edge separating it from the background.
+ */
+export const DRAMATIC_LIGHTING = {
+  /** Studio-rig lights left on under the dramatic setting, with their intensity here. */
+  keep: { rim: 22 } as Record<string, number>,
+  ambient: 0,
+  /** The shadow-casting spot moves to sit with the dramatic key and hardens. */
+  spot: {
+    position: [-1.6, 2.3, 0.3] as [number, number, number],
+    intensity: 55,
+    angle: 0.26,
+    penumbra: 0.35,
+  },
+};
+
+/** The three settings L cycles through. Held in the `lights` record, not separately. */
+export type LightMode = 'studio' | 'front' | 'dramatic';
+
+export function lightMode(lights: Record<string, { on: boolean }>): LightMode {
+  if (lights.dramatic?.on) return 'dramatic';
+  if (lights.front?.on) return 'front';
+  return 'studio';
+}
 
 /** BP_AdjustablePedestal defaults. PHASE 0: replace with the real cm values. */
 export const PEDESTAL_DEFAULTS = {

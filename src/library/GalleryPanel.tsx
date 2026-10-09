@@ -4,7 +4,8 @@ import { deleteArtifact, listArtifactMeta } from './db';
 import { clearModels, dropModel } from './models';
 import { useImportFiles } from '../import/useImport';
 import { ACCEPTED_EXTENSIONS } from '../import/loadModel';
-import { downloadBlob, exportGallery, importGallery } from './galleryFile';
+import { exportGallery, importGallery } from './galleryFile';
+import { saveFile } from '../lib/saveFile';
 
 const mb = (bytes: number) => `${(bytes / 1048576).toFixed(1)} MB`;
 
@@ -49,7 +50,7 @@ export function GalleryPanel() {
     try {
       const blob = await exportGallery(captureSettings());
       const stamp = new Date().toISOString().slice(0, 10);
-      downloadBlob(blob, `artifact-gallery-${stamp}.zip`);
+      await saveFile(blob, `artifact-gallery-${stamp}.zip`);
     } catch (err) {
       setImportError(err instanceof Error ? err.message : 'Export failed.');
     } finally {

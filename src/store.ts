@@ -1,9 +1,11 @@
 import { create } from 'zustand';
 import {
   CAMERA_DISTANCES,
+  CAMERA_HEIGHT_RANGE,
   LIGHT_PRESETS,
   PEDESTAL_DEFAULTS,
   STUDIO_THEME_ORDER,
+  lightMode,
   type StudioTheme,
 } from './scene/presets';
 import type { ArtifactMeta } from './library/db';
@@ -26,9 +28,24 @@ type ViewerState = {
   camDistance: number;
   cycleCamDistance: () => void;
 
+  /**
+   * Height offset for the views that offer the slider, metres, keyed by preset name. Kept
+   * per view so the high and low angles each remember their own setting. Camera and
+   * target move together, so the angle of the view never changes — only where it is
+   * taken from.
+   */
+  camHeights: Record<string, number>;
+  setCamHeight: (name: string, metres: number) => void;
+
   lights: Record<string, { on: boolean; intensity: number }>;
   toggleLight: (id: string) => void;
   setLightIntensity: (id: string, v: number) => void;
+  /**
+   * L: studio → front → dramatic → studio. The three settings live in the `lights`
+   * record as the front and dramatic switches, kept mutually exclusive here, so a gallery
+   * file saves and restores them with no format change.
+   */
+  cycleLightMode: () => void;
 
 
   pedestal: { widthCm: number; lengthCm: number; heightCm: number };
@@ -42,7 +59,7 @@ type ViewerState = {
   rotationStep: number;
   stepRotation: (dir: 1 | -1) => void;
 
-  /** Multiplier on the artifact's auto-fit scale — P / Shift+P in Unreal. */
+  /** Multiplier on the artifact's auto-fit scale — S / Shift+S (P in the Unreal legend). */
   objectScale: number;
   adjustScale: (dir: 1 | -1) => void;
 
@@ -85,6 +102,18 @@ type ViewerState = {
 
   showHelp: boolean;
   toggleHelp: () => void;
+
+  /**
+   * I: bumped to ask the canvas for a snapshot. A counter rather than a flag so two
+   * presses in a row are two snapshots; the capture itself lives inside the Canvas,
+   * where the renderer is.
+   */
+  snapshotRequest: number;
+  requestSnapshot: () => void;
+
+  /** Short confirmation shown after a snapshot is saved. */
+  notice: string | null;
+  setNotice: (v: string | null) => void;
 };
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
@@ -98,6 +127,15 @@ export const useViewer = create<ViewerState>((set) => ({
   cycleCamDistance: () =>
     set((s) => ({ camDistance: (s.camDistance + 1) % CAMERA_DISTANCES.length })),
 
+  camHeights: {},
+  setCamHeight: (name, metres) =>
+    set((s) => ({
+      camHeights: {
+        ...s.camHeights,
+        [name]: clamp(metres, -CAMERA_HEIGHT_RANGE, CAMERA_HEIGHT_RANGE),
+      },
+    })),
+
   lights: Object.fromEntries(
     LIGHT_PRESETS.map((l) => [l.id, { on: l.on, intensity: l.intensity }]),
   ),
@@ -105,6 +143,17 @@ export const useViewer = create<ViewerState>((set) => ({
     set((s) => ({ lights: { ...s.lights, [id]: { ...s.lights[id], on: !s.lights[id].on } } })),
   setLightIntensity: (id, v) =>
     set((s) => ({ lights: { ...s.lights, [id]: { ...s.lights[id], intensity: v } } })),
+  cycleLightMode: () =>
+    set((s) => {
+      const next = { studio: 'front', front: 'dramatic', dramatic: 'studio' }[lightMode(s.lights)];
+      return {
+        lights: {
+          ...s.lights,
+          front: { ...s.lights.front, on: next === 'front' },
+          dramatic: { ...s.lights.dramatic, on: next === 'dramatic' },
+        },
+      };
+    }),
 
 
   pedestal: {
@@ -182,6 +231,12 @@ export const useViewer = create<ViewerState>((set) => ({
 
   showHelp: false,
   toggleHelp: () => set((s) => ({ showHelp: !s.showHelp })),
+
+  snapshotRequest: 0,
+  requestSnapshot: () => set((s) => ({ snapshotRequest: s.snapshotRequest + 1 })),
+
+  notice: null,
+  setNotice: (notice) => set({ notice }),
 }));
 
 /** The metadata for the artifact currently on the pedestal, if any. */
@@ -199,6 +254,7 @@ export function captureSettings(): SceneSettings {
     objectScale: s.objectScale,
     camIndex: s.camIndex,
     camDistance: s.camDistance,
+    camHeights: { ...s.camHeights },
   };
 }
 
@@ -227,5 +283,14 @@ export function applySettings(next: SceneSettings | null): void {
       (next.camDistance as number) < CAMERA_DISTANCES.length
         ? (next.camDistance as number)
         : s.camDistance,
+    // Clamped one by one: a hand-edited or newer file could carry anything here.
+    camHeights:
+      next.camHeights && typeof next.camHeights === 'object'
+        ? Object.fromEntries(
+            Object.entries(next.camHeights)
+              .filter(([, v]) => typeof v === 'number' && Number.isFinite(v))
+              .map(([k, v]) => [k, clamp(v, -CAMERA_HEIGHT_RANGE, CAMERA_HEIGHT_RANGE)]),
+          )
+        : s.camHeights,
   }));
 }

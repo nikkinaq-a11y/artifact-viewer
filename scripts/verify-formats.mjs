@@ -98,7 +98,7 @@ await page.waitForFunction(() => document.querySelector('.hud')?.textContent?.in
 });
 await settle(3000);
 await page.screenshot({ path: join(outDir, 'pedestal-on.png') });
-await page.keyboard.press('KeyV');
+await page.keyboard.press('KeyP');
 await settle(900);
 await page.screenshot({ path: join(outDir, 'pedestal-off.png') });
 console.log('wrote pedestal-on.png / pedestal-off.png');

@@ -64,7 +64,7 @@ await settle(2500);
 console.log('2. staging the scene (pedestal taller, white background, front light on)');
 for (let i = 0; i < 4; i++) await page.keyboard.press('KeyH');
 await page.keyboard.press('KeyB');
-await page.keyboard.press('KeyF');
+await page.keyboard.press('KeyL');
 await settle(800);
 const staged = await hud();
 console.log('   ', staged.replace(/\s+/g, ' ').slice(0, 110));

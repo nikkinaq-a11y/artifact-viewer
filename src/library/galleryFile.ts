@@ -31,6 +31,8 @@ export type SceneSettings = {
   camIndex: number;
   /** Optional: galleries written before the D distance toggle existed have no value here. */
   camDistance?: number;
+  /** Optional: per-view camera-height offsets, metres, keyed by camera preset name. */
+  camHeights?: Record<string, number>;
 };
 
 type ManifestArtifact = {

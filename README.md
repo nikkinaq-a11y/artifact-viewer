@@ -14,9 +14,9 @@ in this repository and assumes no technical background.
 Opens on any computer with nothing installed. The gallery starts **empty by design** — send a
 [gallery `.zip`](#exporting-a-gallery) alongside the link to show a collection.
 
-**Status.** The studio scene, lighting rig, 7 front-facing camera presets (each with a second further-back
-framing on `D`), orbit, pedestal controls and the artifact gallery all work. Four scene modes on
-`B`, including a **silhouette** mode that backlights the wall and switches the rig off. **Artifacts
+**Status.** The studio scene, lighting rig, 5 front-facing camera presets (each with three
+distances on `D`, and a height slider on the tilted views), orbit, pedestal controls and the artifact gallery all work. Four scene modes on
+`B`, including a **silhouette** mode that drops the floor, turns the background white and switches the rig off. Three light settings on `L`, and PNG snapshots on `I`. **Artifacts
 are added by dragging a model onto the window**, persist per machine, and a curated gallery can be
 exported as a single file. It installs as an offline web app, builds as a Mac app, and is deployed
 to the public link above. Still to do: an on-screen control panel with sliders, artifact
@@ -26,7 +26,7 @@ thumbnails, automatic decimation of very large scans, and the seed set.
 
 | File | For |
 |---|---|
-| **[Artifact Viewer Handbook.pdf](Artifact-Viewer-Handbook.pdf)** | **Start here if you are not a developer** — opening the viewer, installing it offline, adding objects, sharing a collection. Written for museum staff, and current — seven front-facing camera angles, `D` for distance, and silhouette. Source: [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html) |
+| **[Artifact Viewer Handbook.pdf](Artifact-Viewer-Handbook.pdf)** | **Start here if you are not a developer** — opening the viewer, installing it offline, adding objects, sharing a collection. Written for museum staff, and current — five front-facing camera angles, three distances on `D`, the camera height slider, three light settings on `L`, `I` snapshots, the new initial-letter keys, and silhouette. Source: [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html) |
 | **README (this file)** | **Start here to *use* the viewer as a developer** — the live link, [controls](#controls), formats, packaging, troubleshooting |
 | **[CLAUDE.md](CLAUDE.md)** | **Start here in a new Claude session** — status, architecture, and every gotcha found so far |
 | [PLAN.md](PLAN.md) | The full plan: findings from the Unreal project, decisions and why, phases |
@@ -47,60 +47,73 @@ Then open the printed URL. `file://` will not work — ES modules need a server.
 
 ## Controls
 
-Matching the `BP_KeyboardControls` legend from Unreal, so muscle memory carries over.
+Each key is the initial of what it does. These replaced the Unreal `BP_KeyboardControls` letters
+on 2026-10-08 (P was scale, K/L pedestal width/length, V pedestal, F light), so an old demo script
+needs updating.
 
 | Key | Action |
 |---|---|
 | `C` | switch camera view (Shift+C goes back) |
-| `D` | camera distance — standard / far, holding the view you are on |
+| `D` | camera distance — far / mid / near, holding the view you are on |
 | `O` | cycle object (Shift+O goes back) |
 | `R` | rotate 30°, one of 12 steps around a full turn (Shift+R to undo) |
-| `P` | object scale (Shift+P to undo) |
-| `H` | pedestal height (Shift+H to undo) |
-| `K` | pedestal width (Shift+K to undo) |
-| `L` | pedestal length (Shift+L to undo) |
-| `B` | scene — dark / white / horizon / silhouette |
-| `V` | show / hide pedestal (artifact stays where it is, floating) |
-| `F` | front light on / off (off by default; no effect in silhouette) |
+| `S` | object scale (Shift+S smaller) |
+| `H` | height — pedestal, and the object on it (Shift+H lower) |
+| `W` | pedestal width (Shift+W narrower) |
+| `Z` | pedestal depth — the z-axis (Shift+Z shallower) |
+| `P` | show / hide pedestal (artifact stays where it is, floating) |
+| `L` | lighting — studio / front / dramatic (no effect in silhouette) |
+| `B` | scene (background) — dark / white / horizon / silhouette |
+| `I` | save an image — PNG snapshot of the scene, no HUD or panels |
 | `Tab` | controls overlay |
 
 **Click and drag to revolve** around the artifact from wherever the current preset put you;
 scroll to zoom. `C` still jumps to the next preset, and dragging cancels an in-flight blend so
 the camera never fights the mouse.
 
-`B`, `V` and `D` have no Unreal equivalent; everything else matches the `BP_KeyboardControls`
-legend.
+**Camera height.** On the Upper and Lower views a vertical slider appears at the right edge. It
+raises and lowers the camera and its target together — ±35 cm — so the angle of the view is kept
+and only the vantage height moves. Each view remembers its own setting (saved in gallery files
+too); double-click resets it. There is one straight-on view; the old Front High / Front Low
+rise-and-fall variants were cut in its favour.
 
-`D` is a second framing of the view you are already on rather than more presets. It pushes the
-camera back along its own line of sight and leaves the focal length alone, so the shot reads as the
-same one taken from further away instead of a wider one. It works on a view you have orbited or
+`D` gives three framings of the view you are already on rather than more presets: **Far** (the
+default), then **Mid**, then **Near**, each about a third closer than the last. It moves the camera
+along its own line of sight and leaves the focal length alone, so the shot reads as the same one
+taken from nearer instead of a narrower one. It works on a view you have orbited or
 scrolled to as well — it dollies whatever is on screen and never changes which preset is selected.
 
 `B` cycles four studio scenes rather than toggling two. **Dark** is the gallery default and
-**white** is for documentation-style plates. **Horizon** puts a light blue floor against grey
-walls, so the floor/wall join reads as a hard line instead of disappearing into one continuous
-field. Dark and white both paint floor and walls the same colour, which is precisely what hides
-that edge — horizon is for when you need to see where the artifact is standing.
+**white** is for documentation-style plates. **Horizon** puts a light blue floor against a grey
+backdrop, so the horizon reads as a clear line instead of disappearing into one continuous field —
+it is for when you need to see where the artifact is standing. There are no walls in any scene: the
+floor is large and fog in the background colour dissolves its far edge.
 
-**Silhouette** is a lighting state as much as a background. The back wall becomes an unlit white
-panel and the entire light rig switches off, so nothing lights the artifact and it reads as a flat
-black cut-out against the glow — profile, openwork and negative space, with no surface detail to
-compete. Both halves are required: a lit artifact in front of a lightbox is not a silhouette, and
-an unlit one against a dark wall is just invisible. The light switches are overridden rather than
+**Silhouette** is a lighting state as much as a background. The floor goes, the background turns
+pure white and the entire light rig switches off, so nothing lights the artifact and it reads as a
+flat black cut-out — profile, openwork and negative space, with no surface detail to compete.
+Both halves are required: a lit artifact in front of white is not a silhouette, and an unlit one
+against something dark is just invisible. The light switches are overridden rather than
 written, so leaving the mode restores whatever rig was set up before entering it — which is also
-why `F` does nothing while silhouette is up.
+why `L` does nothing while silhouette is up.
 
 `F` is a special case. `BP_PhotoViewerController` already defines `FrontLight`, `bFrontLightOn`
 and `SavedFrontIntensity`, but binds them to no key — the logic exists dormant, and the light
 itself lives in `LV_ReflectiveObjectCapture` rather than the baseline level. It is reproduced here,
-off by default, on `F`. Front-on lighting flattens form, so it is for reading surface detail and
+off by default, as the second press of `L`. Front-on lighting flattens form, so it is for reading surface detail and
 inscriptions rather than general use.
 
 The base rig is deliberately contrasty: the key is held below where a pale scan clips, and the
 fill, bounce and ambient are all small enough that the side facing away from the key falls to true
-black. `F` is the way out of that — the front panel is wide enough to wrap round the sides, and the
+black. The front light is the way out of that — the front panel is wide enough to wrap round the sides, and the
 ambient rises with it, so switching it on takes the whole object to an even medium reading light
 with no part of it still at black.
+
+The third setting on `L` is **dramatic**: the studio rig is swapped for one small, hard key high at the
+side, a stronger cool rim from behind, and no fill, bounce or ambient at all, so the object splits
+into a lit half and a black half. Its values are `DRAMATIC_LIGHTING` and the `dramatic` entry in
+`LIGHT_PRESETS`. All three settings live in the saved `lights` record, so galleries keep them.
+
 The lower-left **scene readout** collapses: click the camera chip at its top and the panel reduces
 to that chip alone, so the artifact has the frame to itself without losing the view you are on.
 Click it again to expand. Like the gallery, it is not on a key.

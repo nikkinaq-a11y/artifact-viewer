@@ -13,10 +13,22 @@ const BLEND_SECONDS = 0.7;
 const MIN_POLAR = 0.2;
 const MAX_POLAR = 1.95;
 
-const MIN_DISTANCE = 0.8;
+// Below the nearest D stop (Close × Near ≈ 0.65 m), or orbiting clamps the camera back out.
+const MIN_DISTANCE = 0.4;
 // Has to clear the furthest preset at the largest CAMERA_DISTANCES factor, or OrbitControls
 // clamps the camera back in on its first update and quietly undoes the D blend.
 const MAX_DISTANCE = 7;
+
+const presetAt = (i: number) => {
+  const n = CAMERA_PRESETS.length;
+  return CAMERA_PRESETS[((i % n) + n) % n];
+};
+
+/** The height-slider offset for a view, metres; 0 on views that do not offer the slider. */
+const heightFor = (i: number) => {
+  const p = presetAt(i);
+  return p.heightAdjustable ? (useViewer.getState().camHeights[p.name] ?? 0) : 0;
+};
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
@@ -38,6 +50,7 @@ const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2
 export function CameraRig() {
   const camIndex = useViewer((s) => s.camIndex);
   const camDistance = useViewer((s) => s.camDistance);
+  const camHeights = useViewer((s) => s.camHeights);
   const camera = useThree((s) => s.camera) as PerspectiveCamera;
   const controls = useRef<OrbitControlsImpl>(null);
 
@@ -56,9 +69,11 @@ export function CameraRig() {
   const lastIndex = useRef<number | null>(null);
   const lastFactor = useRef(1);
 
+  /** The height offset currently applied to the camera, metres — see the slider effect. */
+  const appliedHeight = useRef(0);
+
   useEffect(() => {
-    const n = CAMERA_PRESETS.length;
-    const preset = CAMERA_PRESETS[((camIndex % n) + n) % n];
+    const preset = presetAt(camIndex);
     const factor = cameraDistance(camDistance).factor;
 
     fromPos.current.copy(camera.position);
@@ -89,6 +104,12 @@ export function CameraRig() {
         .multiplyScalar(factor)
         .add(toTarget.current);
       toFov.current = preset.fov;
+
+      // The view's height-slider offset rides on both ends, so the angle is unchanged.
+      const lift = heightFor(camIndex);
+      toTarget.current.y += lift;
+      toPos.current.y += lift;
+      appliedHeight.current = lift;
     }
 
     lastIndex.current = camIndex;
@@ -97,7 +118,37 @@ export function CameraRig() {
     t.current = 0;
     blending.current = true;
     if (controls.current) controls.current.enabled = false;
+    // The height offset is read through heightFor on a preset change only; slider moves
+    // are the next effect's job and must not restart the blend.
   }, [camIndex, camDistance, camera]);
+
+  /**
+   * The height slider. Moves the camera and its target up or down by the same amount, so
+   * the view keeps its angle and only the vantage height changes. Applied instantly rather
+   * than blended so the slider feels direct, and as a delta on the live camera so an
+   * orbited or zoomed shot keeps everything except its height. A blend in flight is
+   * shifted along with it, or it would land at the old height.
+   *
+   * It also runs on a preset change, after the effect above has already folded the new
+   * view's offset into its blend and recorded it, so the delta there is zero.
+   */
+  useEffect(() => {
+    const lift = heightFor(camIndex);
+    const delta = lift - appliedHeight.current;
+    if (delta === 0) return;
+    appliedHeight.current = lift;
+
+    camera.position.y += delta;
+    const c = controls.current;
+    if (c) {
+      c.target.y += delta;
+      camera.lookAt(c.target);
+      if (!blending.current) c.update();
+    }
+    if (blending.current) {
+      for (const v of [fromPos, toPos, fromTarget, toTarget]) v.current.y += delta;
+    }
+  }, [camHeights, camIndex, camera]);
 
   useFrame((_, dt) => {
     const c = controls.current;

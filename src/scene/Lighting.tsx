@@ -4,10 +4,12 @@ import { Object3D, RectAreaLight, SpotLight } from 'three';
 import { useViewer } from '../store';
 import {
   AMBIENT_LIGHT,
+  DRAMATIC_LIGHTING,
   FOCUS_HEIGHT,
   KEY_SHADOW_INTENSITY,
   LIGHT_PRESETS,
   STUDIO_THEMES,
+  lightMode,
 } from './presets';
 
 /**
@@ -31,6 +33,13 @@ export function Lighting() {
    */
   const backlit = STUDIO_THEMES[theme].backlit ?? false;
 
+  /**
+   * The dramatic setting swaps the studio rig for its own: the dramatic key plus whatever
+   * DRAMATIC_LIGHTING.keep names, at the intensities it gives. Like silhouette, it overrides
+   * rather than writes the switches, so cycling back to studio restores the rig as it was.
+   */
+  const dramatic = !backlit && lightMode(lights) === 'dramatic';
+
   // A spotLight aims at its `target` object, which must itself be in the scene graph.
   useEffect(() => {
     if (spot.current && target.current) spot.current.target = target.current;
@@ -43,7 +52,10 @@ export function Lighting() {
       LIGHT_PRESETS.map((p) => {
         const l = new RectAreaLight(p.color, p.intensity, p.width, p.height);
         l.position.set(...p.position);
-        l.rotation.set(...p.rotation);
+        // A light's lookAt turns its -Z to the target, which is the side a rect light
+        // emits from — so an aim point needs no hand-worked rotation.
+        if (p.aim) l.lookAt(...p.aim);
+        else l.rotation.set(...p.rotation);
         return { preset: p, light: l };
       }),
     [],
@@ -51,14 +63,32 @@ export function Lighting() {
 
   useEffect(() => {
     for (const { preset, light } of objects) {
-      const s = lights[preset.id];
-      light.visible = s.on && !backlit;
-      light.intensity = s.intensity;
+      const s = lights[preset.id] ?? { on: preset.on, intensity: preset.intensity };
+      const kept = DRAMATIC_LIGHTING.keep[preset.id];
+      if (backlit) {
+        light.visible = false;
+      } else if (dramatic) {
+        light.visible = preset.id === 'dramatic' || kept !== undefined;
+        light.intensity = kept ?? s.intensity;
+      } else {
+        light.visible = s.on && preset.id !== 'dramatic';
+        light.intensity = s.intensity;
+      }
     }
-  }, [lights, objects, backlit]);
+  }, [lights, objects, backlit, dramatic]);
 
   const keyOn = !backlit && (lights.key?.on ?? true);
-  const frontOn = !backlit && (lights.front?.on ?? false);
+  const frontOn = !backlit && !dramatic && (lights.front?.on ?? false);
+
+  const spotIntensity = backlit
+    ? 0
+    : dramatic
+      ? DRAMATIC_LIGHTING.spot.intensity
+      : keyOn
+        ? frontOn
+          ? KEY_SHADOW_INTENSITY.withFront
+          : KEY_SHADOW_INTENSITY.base
+        : 0;
 
   return (
     <>
@@ -73,19 +103,20 @@ export function Lighting() {
 
           The target matters: a spotLight with no target aims at the world origin, which
           is the floor under the pedestal — that lights the pedestal instead of the
-          artifact and flattens the whole composition. */}
+          artifact and flattens the whole composition.
+
+          Under the dramatic setting it moves to sit with the dramatic key and narrows
+          and hardens, because there the cast shadow is half the picture. */}
       <object3D ref={target} position={[0, FOCUS_HEIGHT, 0]} />
       <spotLight
         ref={spot}
-        position={[-1.35, 2.25, 1.35]}
-        angle={0.30}
-        penumbra={0.9}
+        position={dramatic ? DRAMATIC_LIGHTING.spot.position : [-1.35, 2.25, 1.35]}
+        angle={dramatic ? DRAMATIC_LIGHTING.spot.angle : 0.3}
+        penumbra={dramatic ? DRAMATIC_LIGHTING.spot.penumbra : 0.9}
         decay={2}
         distance={12}
-        intensity={
-          keyOn ? (frontOn ? KEY_SHADOW_INTENSITY.withFront : KEY_SHADOW_INTENSITY.base) : 0
-        }
-        color="#fff4e8"
+        intensity={spotIntensity}
+        color={dramatic ? '#ffe8cc' : '#fff4e8'}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
@@ -98,10 +129,18 @@ export function Lighting() {
       {/* Very low ambient stands in for the floor/wall inter-reflection Lumen provides,
           and is the single control that decides whether the darkest shadow is black or
           merely dark — see AMBIENT_LIGHT. It rises with the front light so that switching
-          F on opens the shadows across the whole object rather than only the face the
+          it on opens the shadows across the whole object rather than only the face the
           front light happens to reach, and goes out entirely under a backlit theme. */}
       <ambientLight
-        intensity={backlit ? 0 : frontOn ? AMBIENT_LIGHT.withFront : AMBIENT_LIGHT.base}
+        intensity={
+          backlit
+            ? 0
+            : dramatic
+              ? DRAMATIC_LIGHTING.ambient
+              : frontOn
+                ? AMBIENT_LIGHT.withFront
+                : AMBIENT_LIGHT.base
+        }
         color={AMBIENT_LIGHT.color}
       />
     </>

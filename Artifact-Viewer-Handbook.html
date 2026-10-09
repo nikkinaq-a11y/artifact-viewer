@@ -616,17 +616,18 @@
           <tr><th>Key</th><th>What it does</th></tr>
         </thead>
         <tbody>
-          <tr><td class="key"><kbd>C</kbd></td><td>Next camera angle — seven fixed views, all from the front (turn the object with R to see its other sides)</td></tr>
-          <tr><td class="key"><kbd>D</kbd></td><td>Camera distance — the same view taken from further back, then back again</td></tr>
-          <tr><td class="key"><kbd>O</kbd></td><td>Next object in your collection</td></tr>
-          <tr><td class="key"><kbd>R</kbd></td><td>Turn the object 30° on its base</td></tr>
-          <tr><td class="key"><kbd>P</kbd></td><td>Make the object larger</td></tr>
-          <tr><td class="key"><kbd>H</kbd></td><td>Pedestal taller</td></tr>
-          <tr><td class="key"><kbd>K</kbd></td><td>Pedestal wider</td></tr>
-          <tr><td class="key"><kbd>L</kbd></td><td>Pedestal deeper</td></tr>
-          <tr><td class="key"><kbd>B</kbd></td><td>Scene — dark room, then white, then horizon, then silhouette</td></tr>
-          <tr><td class="key"><kbd>V</kbd></td><td>Hide the pedestal, leaving the object floating</td></tr>
-          <tr><td class="key"><kbd>F</kbd></td><td>Front light on or off — good for reading surface detail. No effect in silhouette, where the whole rig is off</td></tr>
+          <tr><td class="key"><kbd>C</kbd></td><td><strong>C</strong>amera — next of five fixed views, all from the front: straight on, from above, from below, close and wide (turn the object with R to see its other sides)</td></tr>
+          <tr><td class="key"><kbd>D</kbd></td><td><strong>D</strong>istance — far, then mid, then near, then back to far</td></tr>
+          <tr><td class="key"><kbd>O</kbd></td><td>Next <strong>o</strong>bject in your collection</td></tr>
+          <tr><td class="key"><kbd>R</kbd></td><td><strong>R</strong>otate the object 30° on its base</td></tr>
+          <tr><td class="key"><kbd>S</kbd></td><td><strong>S</strong>cale — make the object larger</td></tr>
+          <tr><td class="key"><kbd>H</kbd></td><td><strong>H</strong>eight — raise the pedestal, and the object with it</td></tr>
+          <tr><td class="key"><kbd>W</kbd></td><td>Pedestal <strong>w</strong>ider</td></tr>
+          <tr><td class="key"><kbd>Z</kbd></td><td>Pedestal deeper, front to back</td></tr>
+          <tr><td class="key"><kbd>P</kbd></td><td><strong>P</strong>edestal — hide it, leaving the object floating, or bring it back</td></tr>
+          <tr><td class="key"><kbd>L</kbd></td><td><strong>L</strong>ighting — studio, then front, then dramatic, then back to studio. No effect in silhouette, where the whole rig is off</td></tr>
+          <tr><td class="key"><kbd>B</kbd></td><td><strong>B</strong>ackground scene — dark room, then white, then horizon, then silhouette</td></tr>
+          <tr><td class="key"><kbd>I</kbd></td><td>Save an <strong>i</strong>mage — a picture of the scene, without any of the on-screen panels</td></tr>
           <tr><td class="key"><kbd>Tab</kbd></td><td>Show this list on screen. The readout in the corner collapses too — click the camera chip at the lower left</td></tr>
         </tbody>
       </table>
@@ -635,20 +636,38 @@
     <p>
       The four scenes suit different jobs: <strong>dark</strong> is the gallery look,
       <strong>white</strong> is for documentation photographs, and <strong>horizon</strong>
-      puts a pale blue floor against grey walls so you can see exactly where the object is
-      standing.
+      puts a pale blue floor against a grey sky with a clear horizon, so you can see exactly
+      where the object is standing. There are no walls in any scene: the floor runs out and
+      fades into the background.
     </p>
     <p>
-      <strong>Silhouette</strong> is not simply a fourth background. The back wall becomes a
-      lit white panel and every lamp in the room goes out, so nothing falls on the object at
-      all and it reads as a flat black cut-out against the glow — an outline for comparing
-      profiles, not a surface for reading detail. Because the rig is off, <kbd>F</kbd> does
+      <strong>Silhouette</strong> is not simply a fourth background. The floor disappears,
+      the background turns pure white and every lamp in the room goes out, so nothing falls
+      on the object at all and it reads as a flat black cut-out against white — an outline for comparing
+      profiles, not a surface for reading detail. Because the rig is off, <kbd>L</kbd> does
       nothing here, and the on-screen readout says so.
     </p>
     <p>
-      <kbd>D</kbd> is a second framing rather than more angles. It holds whichever view you
-      are on and moves the camera back, keeping the lens the same, so the pair reads as one
-      shot from further away instead of a wider one.
+      <kbd>D</kbd> gives more framings rather than more angles. It holds whichever view you
+      are on and starts far back, then moves in twice, each step a good deal closer, keeping
+      the lens the same, so each reads as the same shot from nearer rather than a zoomed one.
+    </p>
+    <p>
+      The three lighting settings on <kbd>L</kbd>: <strong>studio</strong> is the standard
+      shaped light, with the shadow side falling to black. <strong>Front</strong> brings the
+      whole object up to an even reading light for surface detail and inscriptions.
+      <strong>Dramatic</strong> is one hard light from the side and a rim from behind, with
+      nothing filling in. Half the object falls away into darkness.
+    </p>
+    <p>
+      On the <strong>from above</strong> and <strong>from below</strong> views, a
+      <strong>camera height</strong> slider appears at the right edge. It raises and lowers
+      the camera without changing the angle it looks at the object from. Each of the two
+      views remembers its own setting, and double-clicking the slider resets it.
+    </p>
+    <p>
+      <kbd>I</kbd> saves a snapshot as a PNG image. It is named after the object, the view
+      and the distance, so a set of snapshots sorts itself.
     </p>
   </section>
 
@@ -681,7 +700,7 @@
       <dt>The object is on its side or far too small</dt>
       <dd>
         The viewer sizes and seats each object automatically, but it cannot know which way up
-        a scan was saved. Use <kbd>R</kbd> to turn it and <kbd>P</kbd> to resize.
+        a scan was saved. Use <kbd>R</kbd> to turn it and <kbd>S</kbd> to resize.
       </dd>
 
       <dt>I opened the GitHub page and it is full of files</dt>

@@ -45,8 +45,9 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 - **[Artifact-Viewer-Handbook.pdf](Artifact-Viewer-Handbook.pdf)** — the non-technical guide for
   museum staff: the address, installing it as an offline app, adding objects, sharing a gallery.
   This is the document a curator gets handed, so it is the one that matters most when a user-facing
-  control changes. Current as of 2026-09-24: seven front-facing camera angles, the `D` distance toggle, and all
-  four scenes including silhouette.
+  control changes. Current as of 2026-10-08: five front-facing camera angles, three `D` distances, the camera
+  height slider, three `L` light settings, `I` snapshots, the initial-letter key map, no walls,
+  and all four scenes.
   **Its source is [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html)** — edit that, never
   the PDF, then re-print with:
   `'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless --disable-gpu
@@ -60,15 +61,15 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 
 ## Status
 
-Working: studio scene, 7 front-facing camera presets (the object turns on R, so the camera stays in front) + a second further-back framing of each on `D` +
+Working: open-floor studio (no walls; fog in the background colour hides the floor edge), 5 front-facing camera presets (the object turns on R, so the camera stays in front) + three distances of each on `D` (Far default, then Mid, Near) + a camera-height slider on Upper/Lower (camera and target move together, angle held) + `I` PNG snapshot of the canvas + `L` cycling studio / front / dramatic light +
 click-drag orbit, pedestal in cm, stepped rotation, scale, dark/white/horizon/silhouette scene
 modes, collapsible scene readout, pedestal hide, front light, drag-and-drop import (FBX/GLB/glTF/
 OBJ/STL/PLY/USD), IndexedDB library with gallery panel, gallery export/import as `.zip`, PWA
 offline install, Tauri Mac app.
 
 **Silhouette is a lighting state, not just a background.** `STUDIO_THEMES.silhouette.backlit`
-switches the back wall to an unlit white panel *and* switches the whole rig off in `Lighting.tsx`;
-either half alone does not produce a silhouette. `overlaysOnLight` is a separate flag on the same
+removes the floor (the white comes from the scene background, which is not tone-mapped) *and*
+switches the whole rig off in `Lighting.tsx`; either half alone does not produce a silhouette. `overlaysOnLight` is a separate flag on the same
 record — it puts the `on-light` class on the root so the HUD and gallery get dark-on-light styling,
 which both the white studio and silhouette need. `.theme-light` is still emitted for the light
 theme because `verify-packaging.mjs` asserts on it, but it no longer carries any styling.
@@ -152,6 +153,11 @@ metres. `src/lib/units.ts` converts at the boundary.
   the real authority, via `LoadingManager.onError`.
 
 **Testing**
+- **`verify-import.mjs` fails on a local dev server** since the starter gallery: it expects an empty
+  library to find the empty-state file input, but `seed.ts` fills it first. Run it against a build
+  without `public/seed/`, or clear the library first.
+- Snapshots (`src/scene/Snapshot.tsx`) render a frame and read it straight back instead of
+  enabling `preserveDrawingBuffer`. All file saving goes through `src/lib/saveFile.ts`.
 - Headless Chrome's `--virtual-time-budget` fires **before** a 5 MB GLB finishes decoding and
   silently captures an empty pedestal. Use the puppeteer scripts, which wait on real state.
 - **Reading the WebGL canvas gives blank** without `preserveDrawingBuffer`. Measure screenshots.
@@ -199,7 +205,9 @@ rendering regressions that typechecking cannot.
 
 - Scene/light/camera/pedestal values live as plain data in `src/scene/presets.ts`, never inline in
   components, so the real Unreal values can be dropped in without touching logic.
-- Keybindings mirror the Unreal `BP_KeyboardControls` legend (C, O, R, P, H, K, L, Shift, Tab) so
-  muscle memory and any demo script carry over. `B`, `V` and `F` are additions.
+- Keys are initials of what they do — C camera, D distance, O object, R rotate, S scale,
+  H height, W width, Z depth, P pedestal, L lighting, B background, I image, Tab help; Shift
+  reverses. Nikki replaced the Unreal `BP_KeyboardControls` letters with these on 2026-10-08, so
+  matching the Unreal legend is no longer a goal.
 - The gallery is deliberately **not** on a key — it lives behind a permanent tab so it is
   discoverable without knowing a shortcut.

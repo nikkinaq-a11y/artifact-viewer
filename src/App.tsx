@@ -8,13 +8,17 @@ import { Lighting } from './scene/Lighting';
 import { Environment } from './scene/Environment';
 import { CameraRig } from './scene/CameraRig';
 import { ArtifactMesh } from './scene/ArtifactMesh';
+import { Snapshot } from './scene/Snapshot';
+import { HeightSlider } from './ui/HeightSlider';
 import {
   CAMERA_DISTANCES,
   CAMERA_PRESETS,
+  FLOOR_FOG,
   ROTATION_STEP_DEG,
   ROTATION_STEPS,
   STUDIO_THEMES,
   cameraDistance,
+  lightMode,
 } from './scene/presets';
 import { currentArtifact, useViewer } from './store';
 import { useKeybinds } from './ui/keybinds';
@@ -36,7 +40,7 @@ function Hud() {
   const showHud = useViewer((s) => s.showHud);
   const toggleHud = useViewer((s) => s.toggleHud);
   const pedestalVisible = useViewer((s) => s.pedestalVisible);
-  const frontLightOn = useViewer((s) => s.lights.front?.on ?? false);
+  const mode = useViewer((s) => lightMode(s.lights));
   const theme = useViewer((s) => s.studioTheme);
   const artifacts = useViewer((s) => s.artifacts);
   const objectIndex = useViewer((s) => s.objectIndex);
@@ -46,8 +50,8 @@ function Hud() {
   const preset = CAMERA_PRESETS[((camIndex % n) + n) % n];
   const distance = cameraDistance(camDistance);
 
-  // Under a backlit theme the whole rig is off, so reporting the front light's switch
-  // would describe a light that is not currently doing anything.
+  // Under a backlit theme the whole rig is off, so reporting the F setting would describe
+  // lights that are not currently doing anything.
   const backlit = STUDIO_THEMES[theme].backlit ?? false;
 
   // rotationStep is unbounded (and can go negative), so wrap it for display only.
@@ -93,7 +97,7 @@ function Hud() {
               {pedestalVisible ? (
                 `${pedestal.widthCm} × ${pedestal.lengthCm} × ${pedestal.heightCm} cm`
               ) : (
-                <span className="dim">hidden — V to show</span>
+                <span className="dim">hidden — P to show</span>
               )}
             </div>
             <div className="hud-row">
@@ -110,12 +114,10 @@ function Hud() {
                 silhouette <span className="dim">· rig off</span>
               </div>
             ) : (
-              frontLightOn && (
-                <div className="hud-row">
-                  <span className="hud-key">Front light</span>
-                  on
-                </div>
-              )
+              <div className="hud-row">
+                <span className="hud-key">Lighting</span>
+                {mode}
+              </div>
             )}
             <div className="hud-hint">Tab for controls</div>
           </div>
@@ -135,18 +137,23 @@ function Hud() {
             <li>
               <b>R</b> rotate {ROTATION_STEP_DEG}° <span className="dim">(Shift+R to undo)</span>
             </li>
-            <li><b>P</b> object scale <span className="dim">(Shift+P to undo)</span></li>
-            <li><b>H</b> pedestal height <span className="dim">(Shift+H to undo)</span></li>
-            <li><b>K</b> pedestal width <span className="dim">(Shift+K to undo)</span></li>
-            <li><b>L</b> pedestal length <span className="dim">(Shift+L to undo)</span></li>
-            <li><b>B</b> scene — dark / white / horizon / silhouette</li>
-            <li><b>V</b> show / hide pedestal</li>
+            <li><b>S</b> object scale <span className="dim">(Shift+S smaller)</span></li>
             <li>
-              <b>F</b> front light on / off{' '}
+              <b>H</b> height — pedestal and object together{' '}
+              <span className="dim">(Shift+H lower)</span>
+            </li>
+            <li><b>W</b> pedestal width <span className="dim">(Shift+W narrower)</span></li>
+            <li><b>Z</b> pedestal depth <span className="dim">(Shift+Z shallower)</span></li>
+            <li><b>P</b> show / hide pedestal</li>
+            <li>
+              <b>L</b> lighting — studio / front / dramatic{' '}
               <span className="dim">(no effect in silhouette)</span>
             </li>
+            <li><b>B</b> scene — dark / white / horizon / silhouette</li>
+            <li><b>I</b> save an image <span className="dim">(PNG snapshot, scene only)</span></li>
           </ul>
           <p className="dim">Click and drag to revolve · scroll to zoom</p>
+          <p className="dim">Upper and lower views: camera height slider on the right edge</p>
           <p className="dim">Gallery — top right corner</p>
           <p className="dim">Click the camera chip, lower left, to reduce this panel</p>
           <p className="dim">Click + Tab to close</p>
@@ -154,6 +161,24 @@ function Hud() {
       )}
     </>
   );
+}
+
+/** Brief confirmation, for now only after a snapshot. Clears itself. */
+function Notice() {
+  const notice = useViewer((s) => s.notice);
+  const setNotice = useViewer((s) => s.setNotice);
+
+  useEffect(() => {
+    if (!notice) return;
+    const id = setTimeout(() => setNotice(null), 3500);
+    return () => clearTimeout(id);
+  }, [notice, setNotice]);
+
+  return notice ? (
+    <div className="notice" role="status">
+      {notice}
+    </div>
+  ) : null;
 }
 
 export default function App() {
@@ -200,6 +225,10 @@ export default function App() {
         }}
       >
         <color attach="background" args={[t.background]} />
+        {/* With no walls, the floor would end in a hard edge in the wider framings. Fog in
+            the backdrop colour dissolves it, starting well beyond the furthest camera so
+            the artifact itself is never touched. */}
+        <fog attach="fog" args={[t.background, (t.fog ?? FLOOR_FOG).near, (t.fog ?? FLOOR_FOG).far]} />
 
         <CameraRig />
         <Environment intensity={t.envIntensity} />
@@ -207,11 +236,12 @@ export default function App() {
         <Studio />
         <Pedestal />
         <ArtifactMesh />
+        <Snapshot />
 
         {/* Grounding contact on the pedestal top — stands in for the ambient occlusion
             Lumen resolves for free. See PLAN.md Appendix A. Goes away with the pedestal,
             since a floating artifact has nothing to cast onto. */}
-        {pedestalVisible && (
+        {pedestalVisible && !t.backlit && (
           <ContactShadows
             position={[0, pedestalTop + 0.001, 0]}
             scale={1.2}
@@ -224,6 +254,8 @@ export default function App() {
       </Canvas>
 
       <Hud />
+      <HeightSlider />
+      <Notice />
       <DropZone />
       {/* Always mounted — the tab is a permanent affordance and expands in place. */}
       <GalleryPanel />

@@ -176,7 +176,7 @@ body,
   font-size: 11px;
 }
 
-/* Wherever the backdrop is light — the white studio, and silhouette's lit wall — the
+/* Wherever the backdrop is light — the white studio, and silhouette's white field — the
    overlays have to sit on light rather than on black. App.tsx puts `on-light` on the root
    for those themes; the theme class itself stays purely a name. */
 .on-light .hud,
@@ -206,13 +206,6 @@ body,
 .on-light .hud-tab:hover { background: rgba(0, 0, 0, 0.05); }
 .on-light .hud-chevron { color: rgba(0, 0, 0, 0.45); }
 
-/* Silhouette is pure white above the floor line and pure black below it, and the lower
-   left panel straddles that join — a translucent background there reads as two different
-   panels stitched together, so this one theme gets opaque ones. */
-.theme-silhouette .hud,
-.theme-silhouette .gallery {
-  background: rgba(255, 255, 255, 0.94);
-}
 
 /* Drag, import and empty states */
 .drop-overlay,
@@ -627,4 +620,85 @@ body,
 .on-light .gallery-pack button:hover:not(:disabled),
 .on-light .gallery-pack label:hover:not(.is-busy) {
   background: rgba(0, 0, 0, 0.05);
+}
+
+/* Camera height — the tilted views only. A vertical slider on the right edge, up is
+   higher, centred top to bottom so it sits clear of the gallery tab and the readout. */
+.height-slider {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 10px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.82);
+  user-select: none;
+}
+
+.height-slider-label {
+  width: 64px;
+  text-align: center;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.height-slider-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.height-slider input {
+  /* Vertical, with the maximum at the top. */
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 18px;
+  height: 220px;
+  margin: 4px 0 0;
+  accent-color: #d8d8dc;
+  cursor: ns-resize;
+}
+
+.on-light .height-slider {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.78);
+}
+
+.on-light .height-slider-label { color: rgba(0, 0, 0, 0.45); }
+.on-light .height-slider input { accent-color: #3a3a40; }
+
+/* Neutral confirmation — snapshot saved. Centred at the bottom, clear of the readout on
+   the left and the error toast on the right. */
+.notice {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  max-width: min(560px, calc(100% - 40px));
+  padding: 9px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+
+.on-light .notice {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.78);
 }

@@ -48,7 +48,7 @@ await shot('02-three-quarter-r');
 
 // Pedestal: taller + wider, exercising BP_AdjustablePedestal parity.
 for (let i = 0; i < 5; i++) await page.keyboard.press('KeyH');
-for (let i = 0; i < 4; i++) await page.keyboard.press('KeyK');
+for (let i = 0; i < 4; i++) await page.keyboard.press('KeyW');
 await settle(900);
 await shot('03-pedestal-adjusted');
 
