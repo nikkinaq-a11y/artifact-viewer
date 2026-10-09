@@ -10,6 +10,11 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registered from main.tsx instead of an injected script tag, because only the
+      // module API reloads an open page once a new version has taken over. With the script
+      // tag, a browser holding an old offline copy kept showing it until a second visit —
+      // which is how a curator ends up looking at a months-old build behind the live link.
+      injectRegister: false,
       includeAssets: ['favicon.svg'],
       manifest: {
         name: 'Artifact Viewer',
