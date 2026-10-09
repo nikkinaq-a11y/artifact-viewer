@@ -702,3 +702,11 @@ body,
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.78);
 }
+
+/* The help overlay switches pointer events off; its one link has to opt back in. */
+.help-download {
+  pointer-events: auto;
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

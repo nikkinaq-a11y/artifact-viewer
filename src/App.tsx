@@ -28,7 +28,12 @@ import { GalleryPanel } from './library/GalleryPanel';
 import { listArtifactMeta } from './library/db';
 import { seedLibraryOnce } from './library/seed';
 import { useImportFiles } from './import/useImport';
+import { isTauri } from '@tauri-apps/api/core';
 import './App.css';
+
+/** Always the newest release — see .github/workflows/release-mac.yml. */
+const MAC_DOWNLOAD_URL =
+  'https://github.com/nikkinaq-a11y/artifact-viewer/releases/latest/download/Artifact-Viewer-Mac.dmg';
 
 function Hud() {
   const camIndex = useViewer((s) => s.camIndex);
@@ -157,6 +162,15 @@ function Hud() {
           <p className="dim">Gallery — top right corner</p>
           <p className="dim">Click the camera chip, lower left, to reduce this panel</p>
           <p className="dim">Click + Tab to close</p>
+          {/* The website and the Mac app are the same build; only the website offers it. */}
+          {!isTauri() && (
+            <p>
+              <a className="help-download" href={MAC_DOWNLOAD_URL}>
+                Download the Mac app
+              </a>{' '}
+              <span className="dim">— works fully offline</span>
+            </p>
+          )}
         </div>
       )}
     </>

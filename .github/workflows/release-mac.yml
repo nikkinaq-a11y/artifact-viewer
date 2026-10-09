@@ -1,0 +1,77 @@
+# Builds the Mac app and attaches it to a GitHub Release, so anyone can download it and run
+# it with no network.
+#
+# The permanent download link — always the newest release — is
+#   https://github.com/nikkinaq-a11y/artifact-viewer/releases/latest/download/Artifact-Viewer-Mac.dmg
+# That works because the last step re-uploads the .dmg under that fixed name; the copy
+# tauri-action uploads has the version in its file name, which would break the link on
+# every release.
+#
+# To publish a new version: bump "version" in src-tauri/tauri.conf.json, then
+#   git tag v0.2.0 && git push origin v0.2.0
+# Or run it by hand from the Actions tab (it uses the version in tauri.conf.json).
+#
+# The build is universal (Apple Silicon + Intel) and ad-hoc signed, not notarized — the
+# first launch needs "Open Anyway" in System Settings → Privacy & Security.
+#
+# The starter scans in public/seed/ are gitignored, so they are never in this build: the
+# downloaded app opens with an empty gallery, like the website.
+name: Release Mac app
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      - id: tauri
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: Artifact Viewer v__VERSION__
+          releaseBody: |
+            **Artifact Viewer for Mac** — works fully offline once downloaded. Runs on Apple Silicon and Intel Macs (macOS 11+).
+
+            1. Download **Artifact-Viewer-Mac.dmg** below and open it.
+            2. Drag **Artifact Viewer** into Applications.
+            3. The first time, macOS will block it because it isn't from the App Store. Open **System Settings → Privacy & Security**, scroll down, click **Open Anyway** next to Artifact Viewer, and confirm. After that it opens normally.
+
+            The gallery starts empty. Drag scans onto the window, or use **Gallery → Import gallery** with a gallery `.zip`.
+          releaseDraft: false
+          prerelease: false
+          # package.json has no "tauri" script, so call the CLI directly.
+          tauriScript: npx tauri
+          args: --target universal-apple-darwin
+
+      - name: Upload the .dmg under a fixed name for the permanent download link
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dmg=$(ls src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg | head -1)
+          cp "$dmg" Artifact-Viewer-Mac.dmg
+          gh release upload "v${{ steps.tauri.outputs.appVersion }}" Artifact-Viewer-Mac.dmg --clobber

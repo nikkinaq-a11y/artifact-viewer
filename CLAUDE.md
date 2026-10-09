@@ -65,7 +65,7 @@ Working: open-floor studio (no walls; fog in the background colour hides the flo
 click-drag orbit, pedestal in cm, stepped rotation, scale, dark/white/horizon/silhouette scene
 modes, collapsible scene readout, pedestal hide, front light, drag-and-drop import (FBX/GLB/glTF/
 OBJ/STL/PLY/USD), IndexedDB library with gallery panel, gallery export/import as `.zip`, PWA
-offline install, Tauri Mac app.
+offline install (auto-reloads onto new versions), downloadable Tauri Mac app with native Save.
 
 **Silhouette is a lighting state, not just a background.** `STUDIO_THEMES.silhouette.backlit`
 removes the floor (the white comes from the scene background, which is not tone-mapped) *and*
@@ -178,7 +178,17 @@ metres. `src/lib/units.ts` converts at the boundary.
 **Tauri**
 - **`dragDropEnabled` must stay `false`.** Tauri's native file-drop handler swallows drops before
   the page sees them, which breaks the headline feature.
-- `.dmg` is off by default; that step drives Finder via AppleScript and fails without a GUI session.
+- **Downloadable Mac app:** `.github/workflows/release-mac.yml` builds on a `v*` tag and publishes
+  a GitHub Release; the permanent link is
+  <https://github.com/nikkinaq-a11y/artifact-viewer/releases/latest/download/Artifact-Viewer-Mac.dmg>.
+  `.dmg` is in `bundle.targets` for CI; locally build with `--bundles app`, since the `.dmg` step
+  drives Finder via AppleScript.
+- **Saving in the app needs the native path.** `<a download>` does nothing in the Tauri window, so
+  `src/lib/saveFile.ts` calls the `choose_save_path` / `write_saved_file` commands in
+  `src-tauri/src/lib.rs` (raw-bytes IPC body). Every file the app produces must go through
+  `saveFile`.
+- **Keep `@tauri-apps/api` and the `tauri` crate on the same minor version** — the build fails on a
+  mismatch.
 - **Run `cargo clean` in `src-tauri/` after moving the project** — Cargo bakes absolute paths in.
 
 ## Commands

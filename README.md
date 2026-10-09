@@ -18,7 +18,7 @@ Opens on any computer with nothing installed. The gallery starts **empty by desi
 distances on `D`, and a height slider on the tilted views), orbit, pedestal controls and the artifact gallery all work. Four scene modes on
 `B`, including a **silhouette** mode that drops the floor, turns the background white and switches the rig off. Three light settings on `L`, and PNG snapshots on `I`. **Artifacts
 are added by dragging a model onto the window**, persist per machine, and a curated gallery can be
-exported as a single file. It installs as an offline web app, builds as a Mac app, and is deployed
+exported as a single file. It installs as an offline web app, downloads as a Mac app, and is deployed
 to the public link above. Still to do: an on-screen control panel with sliders, artifact
 thumbnails, automatic decimation of very large scans, and the seed set.
 
@@ -238,26 +238,50 @@ internet** — the whole app is cached on first visit.
 
 Each person installs it themselves from the link; there is no installer file to hand around.
 
-### Building the Mac app
+### The Mac app download
+
+**Permanent download link (always the newest version):**
+<https://github.com/nikkinaq-a11y/artifact-viewer/releases/latest/download/Artifact-Viewer-Mac.dmg>
+It is also linked from the website's Tab help overlay.
+
+GitHub builds it, not a laptop. `.github/workflows/release-mac.yml` runs on a version tag, builds a
+universal (Apple Silicon + Intel) app and `.dmg`, attaches them to a GitHub Release, and re-uploads
+the `.dmg` as `Artifact-Viewer-Mac.dmg` so the link above never changes. To publish a new version:
 
 ```bash
-npx tauri build
+# bump "version" in src-tauri/tauri.conf.json, commit, push, then:
+git tag v0.3.0 && git push origin v0.3.0
+```
+
+The build is ad-hoc signed, not notarized, so the first launch needs **System Settings → Privacy &
+Security → Open Anyway**. Real notarization needs an Apple Developer ID. The starter scans are
+gitignored, so the downloaded app opens with an empty gallery, the same as the website.
+
+### Building the Mac app locally
+
+```bash
+npx tauri build --bundles app
 ```
 
 Produces `src-tauri/target/release/bundle/macos/Artifact Viewer.app` — about 14 MB,
 double-clickable, no browser or terminal involved. It uses macOS's own web engine rather than
-bundling a copy of Chrome, which is why it is 14 MB and not ~150 MB.
+bundling a copy of Chrome, which is why it is 14 MB and not ~150 MB. A local build *does*
+include the starter scans in `public/seed/`.
 
-Three things to know:
+Things to know:
 
+- **Saving goes through a native Save panel.** An `<a download>` click does nothing in the app's
+  WebKit window, so gallery exports and snapshots used to silently go nowhere. `src/lib/saveFile.ts`
+  detects the app and calls two Rust commands in `src-tauri/src/lib.rs`: one opens the Save panel,
+  the other writes the bytes, which are sent raw rather than as JSON because a gallery can be
+  hundreds of MB.
+- **`@tauri-apps/api` (npm) and the `tauri` crate must be on the same minor version** (both 2.12
+  now). The build refuses to run if they drift apart.
 - **`dragDropEnabled` is `false`** in `src-tauri/tauri.conf.json`, deliberately. Tauri's native
   file-drop handler otherwise swallows drops before the page sees them, which breaks the drag-in
   feature entirely. Do not turn it on.
-- **`.dmg` is not built by default.** That step drives Finder through AppleScript and fails
-  outside a logged-in GUI session. Add `"dmg"` to `bundle.targets` when you want a disk image to
-  hand out, and run the build from a normal Terminal window.
-- The app is **unsigned**, so the first launch on someone else's Mac needs right-click → Open.
-  Real distribution eventually means an Apple Developer ID and notarization.
+- **`.dmg` is in `bundle.targets`** for the GitHub build. Locally, pass `--bundles app`: the `.dmg`
+  step drives Finder through AppleScript and fails outside a logged-in GUI session.
 
 If you move the project folder, run `cargo clean` inside `src-tauri/` before rebuilding — Rust
 bakes absolute paths into its cache and the build fails confusingly otherwise.

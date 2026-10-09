@@ -1,6 +1,6 @@
 # Edit plan: October 2026 (artifact-viewer-web)
 
-Status: **Phase 1 implemented 2026-10-08, not yet committed or pushed. Phase 2 pending.**
+Status: **Phase 1 and Phase 2 implemented, 2026-10-08/09.**
 All edits are in this app (the baseline viewer). It's the only app with silhouette mode. Nothing
 here goes into the reflection or pair apps.
 

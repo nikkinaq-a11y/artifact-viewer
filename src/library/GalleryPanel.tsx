@@ -50,9 +50,15 @@ export function GalleryPanel() {
     try {
       const blob = await exportGallery(captureSettings());
       const stamp = new Date().toISOString().slice(0, 10);
-      await saveFile(blob, `artifact-gallery-${stamp}.zip`);
+      const name = `artifact-gallery-${stamp}.zip`;
+      if (await saveFile(blob, name)) {
+        useViewer.getState().setNotice(`Gallery saved — ${name}, ${artifacts.length} objects`);
+      }
     } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'Export failed.');
+      // The Mac app's save command rejects with a plain string, not an Error.
+      setImportError(
+        err instanceof Error ? err.message : typeof err === 'string' ? err : 'Export failed.',
+      );
     } finally {
       setBusy(null);
     }

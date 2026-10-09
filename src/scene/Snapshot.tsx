@@ -46,7 +46,7 @@ export function Snapshot() {
         return;
       }
       void saveFile(blob, filename).then(
-        () => s.setNotice(`Snapshot saved — ${filename}`),
+        (saved) => s.setNotice(saved ? `Snapshot saved — ${filename}` : 'Snapshot not saved.'),
         () => s.setNotice('Snapshot could not be saved.'),
       );
     }, 'image/png');

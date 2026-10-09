@@ -119,7 +119,7 @@ await page.screenshot({ path: join(outDir, 'restored.png') });
 // Four presses of H at the 5 cm step take the default 100 cm to 120 cm.
 const pedestalKept = /120 cm/.test(restored);
 const themeKept = await page.$$eval('.theme-light', (n) => n.length > 0);
-const frontKept = /Front light/.test(restored);
+const frontKept = /Lighting\s*front/.test(restored);
 console.log('    pedestal height restored:', pedestalKept);
 console.log('    white background restored:', themeKept);
 console.log('    front light restored:', frontKept);

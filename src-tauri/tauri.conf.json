@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Artifact Viewer",
   "mainBinaryName": "Artifact Viewer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "edu.duke.noma.artifactviewer",
   "build": {
     "frontendDist": "../dist",
@@ -29,7 +29,10 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app"],
+    "targets": [
+      "app",
+      "dmg"
+    ],
     "copyright": "Duke University — Nasher Museum of Art",
     "category": "Education",
     "shortDescription": "Museum artifact viewer",
