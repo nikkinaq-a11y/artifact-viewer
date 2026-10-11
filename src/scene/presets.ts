@@ -112,11 +112,13 @@ export const STUDIO_THEMES: Record<
     /** The backdrop. Also the fog colour, so the far floor fades into it with no edge. */
     background: string;
     /**
-     * Fog distances for this theme, metres, overriding FLOOR_FOG. Where the fade sits sets
-     * how soft the horizon is: the further out and narrower the band, the closer to the
-     * true horizon it lands and the sharper the line.
+     * Fog distances for this theme, metres, overriding FLOOR_FOG; `null` turns fog off.
+     * Fog fades the floor into the backdrop, which moves the visible floor line *below*
+     * the true horizon: the floor stops at the fog's far distance, and a floor that ends
+     * 40 m away still sits a few degrees under eye level. Any theme whose floor/sky line
+     * must read as the real horizon has to run without fog.
      */
-    fog?: { near: number; far: number };
+    fog?: { near: number; far: number } | null;
     envIntensity: number;
     /** Opacity of the grounding contact shadow, which needs to differ per background. */
     contactShadowOpacity: number;
@@ -164,9 +166,10 @@ export const STUDIO_THEMES: Record<
     // horizon. The pedestal goes darker still, or it merges into the blue.
     pedestal: '#5a5e64',
     background: '#7c8087',
-    // The horizon line is the point of this theme, so the floor fades out late and over a
-    // short band — a crisp line rather than the soft dissolve the other themes want.
-    fog: { near: 26, far: 44 },
+    // The horizon line is the point of this theme, so there is no fog at all: the floor
+    // runs out to FLOOR_SIZE and converges to a line exactly at the camera's eye level,
+    // the way a real infinite plane does, wherever the camera is raised or lowered to.
+    fog: null,
     // Between dark and white: these surfaces bounce real light, but nothing like a white
     // cyclorama, and lifting it further flattens the very contrast the theme exists for.
     envIntensity: 0.45,
@@ -196,8 +199,35 @@ export const STUDIO_THEMES: Record<
  */
 export const FLOOR_FOG = { near: 6, far: 24 };
 
-/** Floor size, metres. Has to run past the furthest fog `far` in every theme, or its edge shows. */
-export const FLOOR_SIZE = 120;
+/**
+ * Floor size, metres — effectively infinite. Horizon has no fog, so its floor has to reach
+ * far enough that its edge sits within a fraction of a pixel of the true horizon: at 20 km
+ * out and 2.3 m eye height that is under 0.01°, against about 0.035° per pixel. CAMERA_FAR
+ * has to reach the edge too, or the far clip plane cuts the floor short instead.
+ */
+export const FLOOR_SIZE = 40000;
+
+/** Far clip distance, metres. Past the floor's edge (FLOOR_SIZE / 2) so the floor is never clipped. */
+export const CAMERA_FAR = 30000;
+
+/**
+ * The contact shadow under the object, in two layers. ContactShadows renders the scene from
+ * beneath the pedestal top and darkens by how close each part is to it, so `far` is how
+ * high up the object it looks.
+ *
+ * One broad layer alone left objects looking as if they hovered: looking 60 cm up and
+ * heavily blurred, it spread a little darkness from the whole object and almost none of it
+ * landed where the base actually touches, and on the white pedestal it all but vanished.
+ * The tight layer only sees the bottom 5 cm and spreads about 7 mm past the base, so there
+ * is always a dark line exactly at the contact. Much less blur than that and the line hides
+ * almost entirely under the object's own footprint. It is also what covers a base that is very slightly uneven —
+ * auto-fit seats the lowest point on the pedestal, so the rest of the base can sit a few
+ * millimetres above it.
+ */
+export const CONTACT_SHADOW = {
+  broad: { far: 0.35, blur: 2.2 },
+  tight: { far: 0.05, blur: 1.6, opacity: 0.9 },
+};
 
 export type LightPreset = {
   id: string;

@@ -86,8 +86,18 @@ scrolled to as well — it dollies whatever is on screen and never changes which
 `B` cycles four studio scenes rather than toggling two. **Dark** is the gallery default and
 **white** is for documentation-style plates. **Horizon** puts a light blue floor against a grey
 backdrop, so the horizon reads as a clear line instead of disappearing into one continuous field —
-it is for when you need to see where the artifact is standing. There are no walls in any scene: the
-floor is large and fog in the background colour dissolves its far edge.
+it is for when you need to see where the artifact is standing. There are no walls in any scene. The
+floor is effectively infinite (40 km). Dark and white fade it into the background with fog. Horizon
+runs without fog, so its floor meets the sky exactly at the camera's eye level, as a real plane
+does. Fog had put that line 50 px too low, because a floor that fades out 40 m away never reaches
+the true horizon.
+
+**Contact shadows.** Every object gets a two-layer contact shadow on the pedestal top
+(`src/scene/ContactShadow.tsx`, values in `CONTACT_SHADOW`). A broad soft layer grounds the
+object, and a tight layer that only sees the bottom 5 cm keeps a dark line where the base touches.
+This replaced drei's `ContactShadows`, which rendered nothing on the pedestal: its blur pass draws
+a quad at the world origin through the shadow camera, so on any raised surface the quad is behind
+the camera and the shadow is wiped every frame.
 
 **Silhouette** is a lighting state as much as a background. The floor goes, the background turns
 pure white and the entire light rig switches off, so nothing lights the artifact and it reads as a

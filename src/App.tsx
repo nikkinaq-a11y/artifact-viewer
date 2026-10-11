@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { ContactShadows } from '@react-three/drei';
 import { ACESFilmicToneMapping } from 'three';
 import { Studio } from './scene/Studio';
 import { Pedestal } from './scene/Pedestal';
@@ -9,11 +8,14 @@ import { Environment } from './scene/Environment';
 import { CameraRig } from './scene/CameraRig';
 import { ArtifactMesh } from './scene/ArtifactMesh';
 import { Snapshot } from './scene/Snapshot';
+import { ContactShadow } from './scene/ContactShadow';
 import { HeightSlider } from './ui/HeightSlider';
 import { LightSlider } from './ui/LightSlider';
 import {
   CAMERA_DISTANCES,
   CAMERA_PRESETS,
+  CAMERA_FAR,
+  CONTACT_SHADOW,
   FLOOR_FOG,
   ROTATION_STEP_DEG,
   ROTATION_STEPS,
@@ -240,7 +242,7 @@ export default function App() {
       <Canvas
         shadows
         dpr={[1, 2]}
-        camera={{ fov: 28, near: 0.05, far: 100, position: [0, 1.25, 2.2] }}
+        camera={{ fov: 28, near: 0.05, far: CAMERA_FAR, position: [0, 1.25, 2.2] }}
         gl={{
           antialias: true,
           toneMapping: ACESFilmicToneMapping,
@@ -248,10 +250,15 @@ export default function App() {
         }}
       >
         <color attach="background" args={[t.background]} />
-        {/* With no walls, the floor would end in a hard edge in the wider framings. Fog in
-            the backdrop colour dissolves it, starting well beyond the furthest camera so
-            the artifact itself is never touched. */}
-        <fog attach="fog" args={[t.background, (t.fog ?? FLOOR_FOG).near, (t.fog ?? FLOOR_FOG).far]} />
+        {/* Fog in the backdrop colour fades the floor into the background, starting well
+            beyond the furthest camera so the artifact itself is never touched. Horizon
+            turns it off so its floor meets the sky at the true horizon (see presets). */}
+        {t.fog !== null && (
+          <fog
+            attach="fog"
+            args={[t.background, (t.fog ?? FLOOR_FOG).near, (t.fog ?? FLOOR_FOG).far]}
+          />
+        )}
 
         <CameraRig />
         <Environment intensity={t.envIntensity} />
@@ -262,17 +269,26 @@ export default function App() {
         <Snapshot />
 
         {/* Grounding contact on the pedestal top — stands in for the ambient occlusion
-            Lumen resolves for free. See PLAN.md Appendix A. Goes away with the pedestal,
-            since a floating artifact has nothing to cast onto. */}
+            Lumen resolves for free. Two layers: a broad soft one, and a tight one that
+            keeps a dark line exactly where the base touches (see CONTACT_SHADOW). Goes away
+            with the pedestal, since a floating artifact has nothing to cast onto. */}
         {pedestalVisible && !t.backlit && (
-          <ContactShadows
-            position={[0, pedestalTop + 0.001, 0]}
-            scale={1.2}
-            resolution={1024}
-            blur={2.4}
-            opacity={t.contactShadowOpacity}
-            far={0.6}
-          />
+          <>
+            <ContactShadow
+              y={pedestalTop + 0.001}
+              size={1.2}
+              blur={CONTACT_SHADOW.broad.blur}
+              opacity={t.contactShadowOpacity}
+              far={CONTACT_SHADOW.broad.far}
+            />
+            <ContactShadow
+              y={pedestalTop + 0.0015}
+              size={1.2}
+              blur={CONTACT_SHADOW.tight.blur}
+              opacity={CONTACT_SHADOW.tight.opacity}
+              far={CONTACT_SHADOW.tight.far}
+            />
+          </>
         )}
       </Canvas>
 

@@ -62,7 +62,7 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 
 ## Status
 
-Working: open-floor studio (no walls; fog in the background colour hides the floor edge), 5 front-facing camera presets (the object turns on R, so the camera stays in front) + three distances of each on `D` (Far default, then Mid, Near) + a camera-height slider on Upper/Lower (camera and target move together, angle held) + `I` PNG snapshot of the canvas + `L` light / stark with a five-step brightness slider on the right edge + `P` pedestal standard / hidden / white +
+Working: open-floor studio (no walls; a 40 km floor — fog hides its edge in dark/white, Horizon runs without fog so its line sits at true eye level), 5 front-facing camera presets (the object turns on R, so the camera stays in front) + three distances of each on `D` (Far default, then Mid, Near) + a camera-height slider on Upper/Lower (camera and target move together, angle held) + `I` PNG snapshot of the canvas + `L` light / stark with a five-step brightness slider on the right edge + `P` pedestal standard / hidden / white +
 click-drag orbit, pedestal in cm, stepped rotation, scale, dark/white/horizon/silhouette scene
 modes, collapsible scene readout, drag-and-drop import (FBX/GLB/glTF/
 OBJ/STL/PLY/USD), IndexedDB library with gallery panel, gallery export/import as `.zip`, PWA
@@ -134,6 +134,13 @@ metres. `src/lib/units.ts` converts at the boundary.
 - **Pale scans clip first.** Texture brightness varies about 4× across the collection (Dogon Mask
   is dark; the Dancer Doll, Rattle and Yoruba Staff are pale), and the materials are otherwise
   identical. Tune lighting on a pale scan, not only on the masks.
+- **drei's `ContactShadows` renders nothing on a raised surface** — its blur pass draws a quad
+  at the world origin through the shadow camera, which is behind the camera on the 1 m pedestal,
+  so the shadow is cleared every frame. `src/scene/ContactShadow.tsx` replaces it with its own blur
+  camera. There was never a contact shadow on the pedestal before 2026-10-11.
+- **Fog moves the horizon down.** A floor that fades out N metres away stops below eye level by
+  atan(eye height / N); at 40 m that was ~50 px. Horizon therefore runs without fog on a 40 km
+  floor, with `CAMERA_FAR` past its edge.
 - There is no global illumination. The `bounce` light in `presets.ts` is a hand-placed stand-in for
   Lumen's bounce, and is the largest fidelity gap.
 

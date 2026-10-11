@@ -4,9 +4,9 @@ import { FLOOR_SIZE, STUDIO_THEMES } from './presets';
 /**
  * The stage: an open floor and nothing else. The Unreal room's walls (BP_RoomRig / the
  * Cube..Cube5 actors) were taken out — the backdrop is now the scene background colour,
- * and the floor runs far enough out that fog in the same colour (App.tsx) dissolves its
- * edge before any framing can see it, so it reads as a seamless cyclorama rather than a
- * square of floor ending in mid-air. See FLOOR_FOG in presets.ts.
+ * and the floor is effectively infinite (FLOOR_SIZE). Most themes fade it into the backdrop
+ * with fog in the same colour, so it reads as a seamless cyclorama; Horizon runs without
+ * fog so the floor meets the sky at the true horizon. See FLOOR_FOG in presets.ts.
  */
 const FLOOR = { size: FLOOR_SIZE, thickness: 0.1 };
 
