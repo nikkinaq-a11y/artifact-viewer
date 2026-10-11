@@ -4,6 +4,7 @@ import { Object3D, RectAreaLight, SpotLight } from 'three';
 import { useViewer } from '../store';
 import {
   AMBIENT_COLOR,
+  KEY_SHADOW,
   FOCUS_HEIGHT,
   LIGHT_LEVELS,
   LIGHT_PRESETS,
@@ -89,12 +90,10 @@ export function Lighting() {
         intensity={cfg.spot.intensity * k}
         color={cfg.spot.color}
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        // Small offsets: larger ones push the shadow away from the object's base, leaving a
-        // lit sliver between object and shadow that makes it look as if it is hovering.
-        shadow-bias={-0.0002}
-        shadow-normalBias={0.006}
+        shadow-mapSize-width={KEY_SHADOW.mapSize}
+        shadow-mapSize-height={KEY_SHADOW.mapSize}
+        shadow-bias={KEY_SHADOW.bias}
+        shadow-normalBias={KEY_SHADOW.normalBias}
         shadow-camera-near={0.5}
         shadow-camera-far={6}
       />

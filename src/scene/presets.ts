@@ -209,14 +209,15 @@ export const CAMERA_FAR = 30000;
  * pedestal top and darkens by how close each part is to it, so `far` is how high up the
  * object it looks.
  *
- * Only the bottom 5 cm counts, so this behaves like ambient occlusion: a dark line where
- * the base touches, spreading about 7 mm past it, with no direction of its own. A broad
+ * Only the bottom 8 cm counts, so this behaves like ambient occlusion: a dark ring where
+ * the base touches, spreading about 1 cm past it, with no direction of its own. It is what
+ * guarantees the underside always reads as shadowed, even on the side facing the key. A broad
  * layer looking 35 cm up was tried and removed — it projected overhangs (the Gelede's wings,
  * the Antelope's head) straight down as soft blobs pointing a different way from the key
  * light's cast shadow, and two shadows at conflicting angles read as wrong immediately.
  * The key light's shadow is the one with the true angle; this only grounds the base.
  */
-export const CONTACT_SHADOW = { far: 0.05, blur: 1.6, opacity: 0.9 };
+export const CONTACT_SHADOW = { far: 0.08, blur: 2.2, opacity: 1 };
 
 export type LightPreset = {
   id: string;
@@ -366,6 +367,15 @@ export const LIGHT_SETTINGS: Record<
     },
   },
 };
+
+/**
+ * The key spot's shadow map. `bias` and `normalBias` are the safety offsets that stop a
+ * surface from shadowing itself into speckle ("acne"); the cost is that they push the
+ * shadow away from wherever two surfaces meet ("peter-panning"), which showed as a lit
+ * sliver between an object's base and its own shadow. Resolution sets how finely that
+ * contact edge is resolved.
+ */
+export const KEY_SHADOW = { mapSize: 4096, bias: -0.0001, normalBias: 0.001 };
 
 /** Ambient light colour — a cool stand-in for the inter-reflection Lumen provides. */
 export const AMBIENT_COLOR = '#8090a8';
