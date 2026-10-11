@@ -373,9 +373,10 @@ export const LIGHT_SETTINGS: Record<
  * surface from shadowing itself into speckle ("acne"); the cost is that they push the
  * shadow away from wherever two surfaces meet ("peter-panning"), which showed as a lit
  * sliver between an object's base and its own shadow. Resolution sets how finely that
- * contact edge is resolved.
+ * contact edge is resolved. `radius` softens the edge, in shadow-map pixels: 5 is a slight
+ * softening, and above about 8 the filter's sampling shows as grain along the edge.
  */
-export const KEY_SHADOW = { mapSize: 4096, bias: -0.0001, normalBias: 0.001 };
+export const KEY_SHADOW = { mapSize: 4096, bias: -0.0001, normalBias: 0.001, radius: 5 };
 
 /** Ambient light colour — a cool stand-in for the inter-reflection Lumen provides. */
 export const AMBIENT_COLOR = '#8090a8';

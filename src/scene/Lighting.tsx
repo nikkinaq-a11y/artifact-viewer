@@ -94,6 +94,7 @@ export function Lighting() {
         shadow-mapSize-height={KEY_SHADOW.mapSize}
         shadow-bias={KEY_SHADOW.bias}
         shadow-normalBias={KEY_SHADOW.normalBias}
+        shadow-radius={KEY_SHADOW.radius}
         shadow-camera-near={0.5}
         shadow-camera-far={6}
       />
