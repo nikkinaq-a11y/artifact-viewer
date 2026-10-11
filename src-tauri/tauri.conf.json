@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Artifact Viewer",
   "mainBinaryName": "Artifact Viewer",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "identifier": "edu.duke.noma.artifactviewer",
   "build": {
     "frontendDist": "../dist",
