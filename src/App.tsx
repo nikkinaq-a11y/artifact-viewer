@@ -269,26 +269,17 @@ export default function App() {
         <Snapshot />
 
         {/* Grounding contact on the pedestal top — stands in for the ambient occlusion
-            Lumen resolves for free. Two layers: a broad soft one, and a tight one that
-            keeps a dark line exactly where the base touches (see CONTACT_SHADOW). Goes away
-            with the pedestal, since a floating artifact has nothing to cast onto. */}
+            Lumen resolves for free: a dark line where the base touches, with no direction
+            of its own, so it never argues with the key light's shadow (see CONTACT_SHADOW).
+            Goes away with the pedestal, since a floating artifact has nothing to cast onto. */}
         {pedestalVisible && !t.backlit && (
-          <>
-            <ContactShadow
-              y={pedestalTop + 0.001}
-              size={1.2}
-              blur={CONTACT_SHADOW.broad.blur}
-              opacity={t.contactShadowOpacity}
-              far={CONTACT_SHADOW.broad.far}
-            />
-            <ContactShadow
-              y={pedestalTop + 0.0015}
-              size={1.2}
-              blur={CONTACT_SHADOW.tight.blur}
-              opacity={CONTACT_SHADOW.tight.opacity}
-              far={CONTACT_SHADOW.tight.far}
-            />
-          </>
+          <ContactShadow
+            y={pedestalTop + 0.001}
+            size={1.2}
+            blur={CONTACT_SHADOW.blur}
+            opacity={CONTACT_SHADOW.opacity}
+            far={CONTACT_SHADOW.far}
+          />
         )}
       </Canvas>
 

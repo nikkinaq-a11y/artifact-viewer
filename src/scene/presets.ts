@@ -120,8 +120,6 @@ export const STUDIO_THEMES: Record<
      */
     fog?: { near: number; far: number } | null;
     envIntensity: number;
-    /** Opacity of the grounding contact shadow, which needs to differ per background. */
-    contactShadowOpacity: number;
     /**
      * The HUD and gallery sit on a light backdrop in this theme and need dark-on-light
      * styling. Kept separate from the theme name because two very different themes want
@@ -145,7 +143,6 @@ export const STUDIO_THEMES: Record<
     // lighting alone — the rig below is tuned on the assumption that this contributes
     // almost nothing, and raising it undoes that.
     envIntensity: 0.03,
-    contactShadowOpacity: 0.65,
   },
   // A white cyclorama bounces a great deal of light in reality, so the environment is
   // lifted to keep the room from reading as flat grey card.
@@ -154,7 +151,6 @@ export const STUDIO_THEMES: Record<
     pedestal: '#e8e8ea',
     background: '#fafafa',
     envIntensity: 0.85,
-    contactShadowOpacity: 0.4,
     overlaysOnLight: true,
   },
   horizon: {
@@ -173,7 +169,6 @@ export const STUDIO_THEMES: Record<
     // Between dark and white: these surfaces bounce real light, but nothing like a white
     // cyclorama, and lifting it further flattens the very contrast the theme exists for.
     envIntensity: 0.45,
-    contactShadowOpacity: 0.5,
   },
   silhouette: {
     // There is no floor in this theme and the pedestal is never lit, so it resolves to
@@ -185,7 +180,6 @@ export const STUDIO_THEMES: Record<
     // Any image-based lighting at all would put a rim of detail back on the artifact and
     // stop it reading as a flat cut-out, which is the entire look.
     envIntensity: 0,
-    contactShadowOpacity: 0.3,
     backlit: true,
     // The white field fills the frame, so dark overlay panels wash out against it.
     overlaysOnLight: true,
@@ -211,23 +205,18 @@ export const FLOOR_SIZE = 40000;
 export const CAMERA_FAR = 30000;
 
 /**
- * The contact shadow under the object, in two layers. ContactShadows renders the scene from
- * beneath the pedestal top and darkens by how close each part is to it, so `far` is how
- * high up the object it looks.
+ * The contact shadow under the object. ContactShadow renders the scene from beneath the
+ * pedestal top and darkens by how close each part is to it, so `far` is how high up the
+ * object it looks.
  *
- * One broad layer alone left objects looking as if they hovered: looking 60 cm up and
- * heavily blurred, it spread a little darkness from the whole object and almost none of it
- * landed where the base actually touches, and on the white pedestal it all but vanished.
- * The tight layer only sees the bottom 5 cm and spreads about 7 mm past the base, so there
- * is always a dark line exactly at the contact. Much less blur than that and the line hides
- * almost entirely under the object's own footprint. It is also what covers a base that is very slightly uneven —
- * auto-fit seats the lowest point on the pedestal, so the rest of the base can sit a few
- * millimetres above it.
+ * Only the bottom 5 cm counts, so this behaves like ambient occlusion: a dark line where
+ * the base touches, spreading about 7 mm past it, with no direction of its own. A broad
+ * layer looking 35 cm up was tried and removed — it projected overhangs (the Gelede's wings,
+ * the Antelope's head) straight down as soft blobs pointing a different way from the key
+ * light's cast shadow, and two shadows at conflicting angles read as wrong immediately.
+ * The key light's shadow is the one with the true angle; this only grounds the base.
  */
-export const CONTACT_SHADOW = {
-  broad: { far: 0.35, blur: 2.2 },
-  tight: { far: 0.05, blur: 1.6, opacity: 0.9 },
-};
+export const CONTACT_SHADOW = { far: 0.05, blur: 1.6, opacity: 0.9 };
 
 export type LightPreset = {
   id: string;

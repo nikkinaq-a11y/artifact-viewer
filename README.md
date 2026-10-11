@@ -92,9 +92,11 @@ runs without fog, so its floor meets the sky exactly at the camera's eye level, 
 does. Fog had put that line 50 px too low, because a floor that fades out 40 m away never reaches
 the true horizon.
 
-**Contact shadows.** Every object gets a two-layer contact shadow on the pedestal top
-(`src/scene/ContactShadow.tsx`, values in `CONTACT_SHADOW`). A broad soft layer grounds the
-object, and a tight layer that only sees the bottom 5 cm keeps a dark line where the base touches.
+**Contact shadow.** Every object gets a contact shadow on the pedestal top
+(`src/scene/ContactShadow.tsx`, values in `CONTACT_SHADOW`). It only sees the bottom 5 cm, so it
+acts like ambient occlusion: a dark line where the base touches, with no direction of its own. A
+broad layer was tried and removed, because it projected overhangs straight down and disagreed with
+the key light's shadow, which is the one with the true angle.
 This replaced drei's `ContactShadows`, which rendered nothing on the pedestal: its blur pass draws
 a quad at the world origin through the shadow camera, so on any raised surface the quad is behind
 the camera and the shadow is wiped every frame.
