@@ -16,7 +16,7 @@ Opens on any computer with nothing installed. The gallery starts **empty by desi
 
 **Status.** The studio scene, lighting rig, 5 front-facing camera presets (each with three
 distances on `D`, and a height slider on the tilted views), orbit, pedestal controls and the artifact gallery all work. Four scene modes on
-`B`, including a **silhouette** mode that drops the floor, turns the background white and switches the rig off. Three light settings on `L`, and PNG snapshots on `I`. **Artifacts
+`B`, including a **silhouette** mode that drops the floor, turns the background white and switches the rig off. Two light settings on `L` with a five-step brightness slider, a three-way pedestal on `P`, and PNG snapshots on `I`. **Artifacts
 are added by dragging a model onto the window**, persist per machine, and a curated gallery can be
 exported as a single file. It installs as an offline web app, downloads as a Mac app, and is deployed
 to the public link above. Still to do: an on-screen control panel with sliders, artifact
@@ -26,7 +26,7 @@ thumbnails, automatic decimation of very large scans, and the seed set.
 
 | File | For |
 |---|---|
-| **[Artifact Viewer Handbook.pdf](Artifact-Viewer-Handbook.pdf)** | **Start here if you are not a developer** — opening the viewer, installing it offline, adding objects, sharing a collection. Written for museum staff, and current — five front-facing camera angles, three distances on `D`, the camera height slider, three light settings on `L`, `I` snapshots, the new initial-letter keys, and silhouette. Source: [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html) |
+| **[Artifact Viewer Handbook.pdf](Artifact-Viewer-Handbook.pdf)** | **Start here if you are not a developer** — opening the viewer, installing it offline, adding objects, sharing a collection. Written for museum staff, and current — five front-facing camera angles, three distances on `D`, the camera height slider, light / stark on `L` with the brightness slider, the white pedestal, `I` snapshots, the new initial-letter keys, and silhouette. Source: [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html) |
 | **README (this file)** | **Start here to *use* the viewer as a developer** — the live link, [controls](#controls), formats, packaging, troubleshooting |
 | **[CLAUDE.md](CLAUDE.md)** | **Start here in a new Claude session** — status, architecture, and every gotcha found so far |
 | [PLAN.md](PLAN.md) | The full plan: findings from the Unreal project, decisions and why, phases |
@@ -61,8 +61,8 @@ needs updating.
 | `H` | height — pedestal, and the object on it (Shift+H lower) |
 | `W` | pedestal width (Shift+W narrower) |
 | `Z` | pedestal depth — the z-axis (Shift+Z shallower) |
-| `P` | show / hide pedestal (artifact stays where it is, floating) |
-| `L` | lighting — studio / front / dramatic (no effect in silhouette) |
+| `P` | pedestal — standard / hidden (artifact stays where it is, floating) / white |
+| `L` | lighting — light / stark; brightness is the slider on the right edge (no effect in silhouette) |
 | `B` | scene (background) — dark / white / horizon / silhouette |
 | `I` | save an image — PNG snapshot of the scene, no HUD or panels |
 | `Tab` | controls overlay |
@@ -93,26 +93,31 @@ floor is large and fog in the background colour dissolves its far edge.
 pure white and the entire light rig switches off, so nothing lights the artifact and it reads as a
 flat black cut-out — profile, openwork and negative space, with no surface detail to compete.
 Both halves are required: a lit artifact in front of white is not a silhouette, and an unlit one
-against something dark is just invisible. The light switches are overridden rather than
-written, so leaving the mode restores whatever rig was set up before entering it — which is also
-why `L` does nothing while silhouette is up.
+against something dark is just invisible. Leaving the mode restores the light setting and level
+that were up before — which is also why `L` and the light slider do nothing in silhouette.
 
-`F` is a special case. `BP_PhotoViewerController` already defines `FrontLight`, `bFrontLightOn`
-and `SavedFrontIntensity`, but binds them to no key — the logic exists dormant, and the light
-itself lives in `LV_ReflectiveObjectCapture` rather than the baseline level. It is reproduced here,
-off by default, as the second press of `L`. Front-on lighting flattens form, so it is for reading surface detail and
-inscriptions rather than general use.
+**Lighting** is two settings on `L` — **light** and **stark** — and a five-step brightness slider
+on the right edge that scales every light in whichever setting is up. All the values are
+`LIGHT_SETTINGS` and `LIGHT_LEVELS` in `presets.ts`; `LIGHT_PRESETS` holds only where each panel sits.
 
-The base rig is deliberately contrasty: the key is held below where a pale scan clips, and the
-fill, bounce and ambient are all small enough that the side facing away from the key falls to true
-black. The front light is the way out of that — the front panel is wide enough to wrap round the sides, and the
-ambient rises with it, so switching it on takes the whole object to an even medium reading light
-with no part of it still at black.
+- **light** is the everyday setting: shaped light from the upper left, with the front panel (the
+  `FrontLight` that `BP_PhotoViewerController` defines but never binds) and a little ambient
+  keeping the shadow side readable. It replaced the old studio and front settings, and is gentler
+  than either was: pale scans, such as the Dancer Doll and the Yoruba Staff, blew out under the old
+  levels. Its middle step is about 12% dimmer than the old studio setting, and its top step stays
+  below the old front light.
+- **stark** is one small, hard key high at the side, a strong cool rim from behind, and no fill,
+  bounce or ambient, so the object splits into a lit half and a black half.
 
-The third setting on `L` is **dramatic**: the studio rig is swapped for one small, hard key high at the
-side, a stronger cool rim from behind, and no fill, bounce or ambient at all, so the object splits
-into a lit half and a black half. Its values are `DRAMATIC_LIGHTING` and the `dramatic` entry in
-`LIGHT_PRESETS`. All three settings live in the saved `lights` record, so galleries keep them.
+**Why the spot does most of the lighting.** `RectAreaLight` cannot cast shadows, so the cast shadow
+comes from a separate spot. Any rect light shines straight into that shadow and lifts it, which is
+what made the pedestal shadows pale and patchy when the rect key carried the light. The rect key is
+now low, for soft modelling, and the shadow-casting spot carries the key light. The shadow bias is
+kept small so the shadow starts at the object's base instead of a few millimetres off it.
+
+Galleries save the setting and the level. Galleries written before 2026-10-11 map across: their
+dramatic switch becomes stark, and their saved light intensities are ignored, because there was
+never a control for them and they only carried the old, too-bright tuning.
 
 The lower-left **scene readout** collapses: click the camera chip at its top and the panel reduces
 to that chip alone, so the artifact has the frame to itself without losing the view you are on.

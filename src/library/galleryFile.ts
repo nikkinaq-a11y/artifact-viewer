@@ -25,7 +25,14 @@ export const GALLERY_FORMAT_VERSION = 1;
 export type SceneSettings = {
   pedestal: { widthCm: number; lengthCm: number; heightCm: number };
   pedestalVisible: boolean;
-  lights: Record<string, { on: boolean; intensity: number }>;
+  /** Optional: standard / hidden / white. Older galleries only have pedestalVisible. */
+  pedestalMode?: string;
+  /** Written by builds before light / stark; read only to map an old gallery across. */
+  lights?: Record<string, { on: boolean; intensity: number }>;
+  /** Optional: light / stark. */
+  lightSetting?: string;
+  /** Optional: index into LIGHT_LEVELS. */
+  lightLevel?: number;
   studioTheme: string;
   objectScale: number;
   camIndex: number;

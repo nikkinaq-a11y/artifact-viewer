@@ -21,9 +21,9 @@ export function HeightSlider() {
   const rangeCm = Math.round(CAMERA_HEIGHT_RANGE * 100);
 
   return (
-    <div className="height-slider">
-      <div className="height-slider-label">Camera height</div>
-      <div className="height-slider-value">
+    <div className="rail-slider">
+      <div className="rail-slider-label">Camera height</div>
+      <div className="rail-slider-value">
         {cmValue > 0 ? '+' : ''}
         {cmValue} cm
       </div>

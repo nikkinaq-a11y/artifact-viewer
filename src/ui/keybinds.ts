@@ -8,7 +8,8 @@ import { useViewer } from '../store';
  *
  *   C camera · D distance · O object · R rotate · S scale
  *   H height (pedestal, and the object on it) · W pedestal width · Z pedestal depth
- *   P pedestal show / hide · L lighting · B background scene · I image (snapshot)
+ *   P pedestal (standard / hidden / white) · L light / stark · B background scene
+ *   I image (snapshot)
  *   Tab help
  *
  * Shift reverses whatever has a direction. Z is depth as in the z-axis — the pedestal's
@@ -57,11 +58,12 @@ export function useKeybinds() {
           s.adjustPedestal('lengthCm', dir);
           break;
         case 'KeyP':
-          s.togglePedestal();
+          // Standard → hidden → white.
+          s.cyclePedestal();
           break;
         case 'KeyL':
-          // Studio → front → dramatic.
-          s.cycleLightMode();
+          // Light ↔ stark. Brightness is the slider on the right edge.
+          s.toggleLightSetting();
           break;
         case 'KeyB':
           s.toggleStudioTheme();

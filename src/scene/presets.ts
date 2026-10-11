@@ -201,7 +201,6 @@ export const FLOOR_SIZE = 120;
 
 export type LightPreset = {
   id: string;
-  label: string;
   position: [number, number, number];
   /** Euler XYZ in radians — rect lights emit along -Z of their local frame. */
   rotation: [number, number, number];
@@ -210,189 +209,164 @@ export type LightPreset = {
   /** metres */
   width: number;
   height: number;
-  intensity: number;
   color: string;
-  /** Whether it starts switched on. */
-  on: boolean;
 };
 
 /**
- * Mirrors the UE RectLight rig (Full_Exposure2 / RectLight2 in the level). three.js
- * RectAreaLight is the direct analogue; note RectAreaLightUniformsLib.init() must run
- * once or these render black.
+ * The rect-light panels, mirroring the UE RectLight rig (Full_Exposure2 / RectLight2).
+ * Placement only — how bright each one is, and whether it is on at all, belongs to the
+ * light setting in LIGHT_SETTINGS. RectAreaLightUniformsLib.init() must run once or these
+ * render black.
  *
- * The rig is tuned for range rather than brightness. The key sits low enough that ACES
- * still has room above the brightest highlight on a pale scan, and the fill, bounce and
- * ambient are all small enough that the side of the artifact facing away from the key
- * falls to true black instead of a lifted grey. That contrast is the base studio look;
- * the front light is the deliberate way out of it, not a fault in it.
+ * Sizes are deliberately small and close. Large rect lights flood the room and wash the
+ * pedestal out to mid-grey; the reference render has the pedestal nearly black with the
+ * artifact carrying almost all the luminance.
  */
 export const LIGHT_PRESETS: LightPreset[] = [
-  // Sizes are deliberately small and close. Large rect lights flood the room and wash
-  // the pedestal out to mid-grey; the reference render has the pedestal nearly black with
-  // the artifact carrying almost all the luminance.
   {
     id: 'key',
-    label: 'Key',
     position: [-0.95, 1.75, 1.05],
     rotation: [-0.32, -0.72, 0],
     width: 0.7,
     height: 0.9,
-    // Held below the point where a light-toned scan clips: the shadow detail this rig is
-    // built around is worth more than the last stop of highlight.
-    intensity: 15,
     color: '#fff4e8',
-    on: true,
   },
   {
     id: 'fill',
-    label: 'Fill',
     position: [1.15, 1.45, 0.95],
     rotation: [-0.16, 0.88, 0],
     width: 0.7,
     height: 0.7,
-    // Barely present. Enough to keep the shadow edge from reading as a hard clip, not
-    // enough to open the shadow itself — that is the front light's job.
-    intensity: 1.6,
     color: '#eaf0ff',
-    on: true,
   },
   {
     id: 'rim',
-    label: 'Rim',
     position: [0.55, 1.85, -1.1],
     rotation: [-0.3, Math.PI - 0.45, 0],
     width: 0.5,
     height: 0.6,
-    intensity: 7,
     color: '#ffffff',
-    on: true,
   },
   {
-    // Mirrors the FrontLight / bFrontLightOn / SavedFrontIntensity variables that exist in
-    // BP_PhotoViewerController but are bound to no key — the logic is there, dormant, and
-    // the light itself lives in LV_ReflectiveObjectCapture rather than the baseline level.
-    // Off by default here for the same reason; L cycles to it (studio → front → dramatic).
-    //
-    // Front-on lighting flattens form, so it is a deliberate choice for reading surface
-    // detail and inscriptions rather than a general-purpose key light. Wide enough to
-    // wrap around the sides rather than punch a bright disc onto the front, but no taller
-    // than the artifact and sitting above the pedestal top with almost no downward tilt:
-    // a larger or lower panel spills straight onto the pedestal and washes it to mid
-    // grey, which is the one thing the reference render is emphatic about not doing.
-    //
-    // With the raised ambient in AMBIENT_LIGHT.withFront, switching it on takes the whole
-    // object to an even medium reading light with no part of it still at black.
+    // A wide, low-tilt panel from the front (the FrontLight BP_PhotoViewerController
+    // defines). Part of the light setting at a gentle level, so the shadow side reads as
+    // dark rather than as black. No taller than the artifact and sitting above the pedestal
+    // top: a larger or lower panel spills onto the pedestal and washes it to grey.
     id: 'front',
-    label: 'Front',
     position: [0, 1.52, 1.5],
     rotation: [-0.05, 0, 0],
     width: 1.25,
     height: 0.95,
-    intensity: 10,
     color: '#fff6ec',
-    on: false,
   },
   {
-    // The dramatic key. Never on alongside the studio rig — Lighting.tsx swaps the whole
-    // rig for this one when it is switched on (see DRAMATIC_LIGHTING). A small panel high
-    // to the side and only slightly forward of the artifact: small makes the shadow edge
-    // hard, and coming from the side rather than the front is what splits the object into
-    // a lit half and a black half instead of the studio rig's graded turn.
-    id: 'dramatic',
-    label: 'Dramatic',
+    // Stands in for the Lumen bounce off the pedestal top that three.js has no GI for.
+    // See PLAN.md Appendix A. Kept weak and close so it lifts the artifact's underside
+    // without lighting the pedestal itself.
+    id: 'bounce',
+    position: [0, 1.02, 0.42],
+    rotation: [1.15, 0, 0],
+    width: 0.5,
+    height: 0.35,
+    color: '#ffe9d5',
+  },
+  {
+    // The stark key: a small panel high to the side and only slightly forward. Small makes
+    // the edge hard, and coming from the side splits the object into a lit half and a
+    // black half.
+    id: 'stark',
     position: [-1.35, 1.95, 0.25],
     rotation: [0, 0, 0],
     aim: [0, FOCUS_HEIGHT, 0],
     width: 0.32,
     height: 0.38,
-    // Rect-light intensity is per unit area, and this panel is a fifth the size of the
-    // studio key — the high number is what it takes to make the lit side genuinely bright.
-    intensity: 220,
     color: '#ffe8cc',
-    on: false,
-  },
-  {
-    id: 'bounce',
-    label: 'Bounce',
-    // Stands in for the Lumen bounce off the pedestal top that three.js has no GI for.
-    // See PLAN.md Appendix A — this is the single largest fidelity delta. Kept weak and
-    // close so it lifts the artifact's underside without lighting the pedestal itself.
-    position: [0, 1.02, 0.42],
-    rotation: [1.15, 0, 0],
-    width: 0.5,
-    height: 0.35,
-    intensity: 0.9,
-    color: '#ffe9d5',
-    on: true,
   },
 ];
 
-/**
- * Ambient stand-in for the inter-reflection Lumen provides.
- *
- * `base` is almost nothing on purpose: the base studio is meant to leave the artifact's
- * shadow side at true black, and ambient is the one light that reaches everywhere, so any
- * real amount of it lifts those shadows off zero and there is no getting them back.
- *
- * `withFront` is the other half of the front light. Switching the front light on is meant to read as
- * the room being brought up to an even working level for reading surface detail — not as
- * one more lamp aimed at the front — so the general level rises with it and the shadows
- * come off black everywhere, including the faces the front light never reaches.
- */
-export const AMBIENT_LIGHT = {
-  color: '#8090a8',
-  base: 0.012,
-  // Enough to take the unlit faces off black, held below the point where it starts
-  // lifting the pedestal and the floor along with the artifact.
-  withFront: 0.07,
-};
+/** The two settings L toggles between. */
+export type LightSetting = 'light' | 'stark';
+export const LIGHT_SETTING_ORDER: LightSetting[] = ['light', 'stark'];
 
 /**
- * The shadow-casting spot co-located with the key. RectAreaLight cannot cast shadows in
- * three.js, so the rig's look and its cast shadow are split across two lights; this is
- * the shadow half, and its intensity has to move with the key's or the cast reads
- * brighter than the light supposedly making it.
+ * Everything about how bright the scene is, per setting, at the middle brightness level.
  *
- * It drops when the front light is on for the same reason the ambient rises: a flat
- * working light and a hard directional cast shadow are not the same room.
- */
-export const KEY_SHADOW_INTENSITY = {
-  base: 17,
-  withFront: 11,
-};
-
-/**
- * The third light setting, after the studio rig and the front light: one hard side key, a
- * strong cool rim from behind, and nothing at all filling the shadow side. L cycles
- * studio → front → dramatic.
+ * `rects` names the panels from LIGHT_PRESETS that are on in this setting, with their
+ * intensity; any panel not named is off. Rect-light intensity is per unit area, which is
+ * why the small stark panel needs a far larger number than the big ones.
  *
- * It replaces the studio rig rather than adding to it — the fill, the bounce and the base
- * ambient are exactly what keep the studio look's shadows graded, and the point here is
- * that half the object falls straight to black. Only the rim stays, pushed harder, so the
- * dark side still has an edge separating it from the background.
+ * **Why the spot carries so much.** RectAreaLight cannot cast shadows in three.js, so the
+ * cast shadow comes from this spot alone. Whatever light the rect panels add falls straight
+ * into that shadow and lifts it. When the rect key was the main light, shadows on the
+ * pedestal came out pale and patchy, light where they should have been dark. So the rect
+ * key is now kept low, for soft modelling on the object, and the spot, which casts the
+ * shadow, does most of the lighting. Shadows then go properly dark.
+ *
+ * **light** is the everyday setting: shaped light from the upper left, with the front
+ * panel and a little ambient keeping the shadow side readable rather than black. It
+ * replaces the old studio and front settings, and is deliberately gentler than front was.
+ * Pale scans clipped under the old levels.
+ *
+ * **stark** is one hard side light and a cool rim from behind, with no fill, bounce or
+ * ambient, so half the object falls away into darkness.
  */
-export const DRAMATIC_LIGHTING = {
-  /** Studio-rig lights left on under the dramatic setting, with their intensity here. */
-  keep: { rim: 22 } as Record<string, number>,
-  ambient: 0,
-  /** The shadow-casting spot moves to sit with the dramatic key and hardens. */
-  spot: {
-    position: [-1.6, 2.3, 0.3] as [number, number, number],
-    intensity: 55,
-    angle: 0.26,
-    penumbra: 0.35,
+export const LIGHT_SETTINGS: Record<
+  LightSetting,
+  {
+    rects: Record<string, number>;
+    ambient: number;
+    spot: {
+      position: [number, number, number];
+      intensity: number;
+      angle: number;
+      penumbra: number;
+      color: string;
+    };
+  }
+> = {
+  light: {
+    rects: { key: 5, fill: 1.2, rim: 5, front: 2.2, bounce: 0.6 },
+    ambient: 0.03,
+    spot: {
+      position: [-1.35, 2.25, 1.35],
+      intensity: 16,
+      angle: 0.32,
+      penumbra: 0.55,
+      color: '#fff4e8',
+    },
+  },
+  stark: {
+    rects: { stark: 90, rim: 16 },
+    ambient: 0,
+    spot: {
+      position: [-1.6, 2.3, 0.3],
+      intensity: 55,
+      angle: 0.26,
+      penumbra: 0.35,
+      color: '#ffe8cc',
+    },
   },
 };
 
-/** The three settings L cycles through. Held in the `lights` record, not separately. */
-export type LightMode = 'studio' | 'front' | 'dramatic';
+/** Ambient light colour — a cool stand-in for the inter-reflection Lumen provides. */
+export const AMBIENT_COLOR = '#8090a8';
 
-export function lightMode(lights: Record<string, { on: boolean }>): LightMode {
-  if (lights.dramatic?.on) return 'dramatic';
-  if (lights.front?.on) return 'front';
-  return 'studio';
-}
+/**
+ * The five brightness steps on the slider, as multipliers on every light in the current
+ * setting. Level 3 (index 2) is the setting as tuned above. The top step is held well
+ * below the old front light, which blew out pale scans.
+ */
+export const LIGHT_LEVELS = [0.45, 0.65, 1, 1.3, 1.6];
+export const DEFAULT_LIGHT_LEVEL = 2;
+
+/**
+ * P cycles the pedestal: the theme's own colour (dark in the gallery theme), hidden, then
+ * white. Hidden keeps the artifact at its seated height, floating.
+ */
+export type PedestalMode = 'standard' | 'hidden' | 'white';
+export const PEDESTAL_MODE_ORDER: PedestalMode[] = ['standard', 'hidden', 'white'];
+/** A white that reads as white under the rig without clipping to a flat glare. */
+export const WHITE_PEDESTAL = '#d6d6d9';
 
 /** BP_AdjustablePedestal defaults. PHASE 0: replace with the real cm values. */
 export const PEDESTAL_DEFAULTS = {

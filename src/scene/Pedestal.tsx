@@ -1,6 +1,6 @@
 import { useViewer } from '../store';
 import { cm } from '../lib/units';
-import { STUDIO_THEMES } from './presets';
+import { STUDIO_THEMES, WHITE_PEDESTAL } from './presets';
 
 /**
  * BP_AdjustablePedestal: WidthCm / LengthCm / HeightCm, driven by H / K / L (+Shift).
@@ -10,7 +10,8 @@ import { STUDIO_THEMES } from './presets';
 export function Pedestal() {
   const { widthCm, lengthCm, heightCm } = useViewer((s) => s.pedestal);
   const theme = useViewer((s) => s.studioTheme);
-  const visible = useViewer((s) => s.pedestalVisible);
+  const mode = useViewer((s) => s.pedestalMode);
+  const visible = mode !== 'hidden';
 
   const w = cm(widthCm);
   const l = cm(lengthCm);
@@ -22,7 +23,9 @@ export function Pedestal() {
     <mesh visible={visible} castShadow={visible} receiveShadow={visible} position={[0, h / 2, 0]}>
       <boxGeometry args={[w, h, l]} />
       <meshStandardMaterial
-        color={STUDIO_THEMES[theme].pedestal}
+        // White is an override on top of whichever theme is up; silhouette still takes it
+        // to black, since nothing lights it there.
+        color={mode === 'white' ? WHITE_PEDESTAL : STUDIO_THEMES[theme].pedestal}
         roughness={0.75}
         metalness={0}
       />

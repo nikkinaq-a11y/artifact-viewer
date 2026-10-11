@@ -2,10 +2,14 @@ import { create } from 'zustand';
 import {
   CAMERA_DISTANCES,
   CAMERA_HEIGHT_RANGE,
-  LIGHT_PRESETS,
+  DEFAULT_LIGHT_LEVEL,
+  LIGHT_LEVELS,
+  LIGHT_SETTING_ORDER,
+  PEDESTAL_MODE_ORDER,
   PEDESTAL_DEFAULTS,
   STUDIO_THEME_ORDER,
-  lightMode,
+  type LightSetting,
+  type PedestalMode,
   type StudioTheme,
 } from './scene/presets';
 import type { ArtifactMeta } from './library/db';
@@ -37,15 +41,12 @@ type ViewerState = {
   camHeights: Record<string, number>;
   setCamHeight: (name: string, metres: number) => void;
 
-  lights: Record<string, { on: boolean; intensity: number }>;
-  toggleLight: (id: string) => void;
-  setLightIntensity: (id: string, v: number) => void;
-  /**
-   * L: studio → front → dramatic → studio. The three settings live in the `lights`
-   * record as the front and dramatic switches, kept mutually exclusive here, so a gallery
-   * file saves and restores them with no format change.
-   */
-  cycleLightMode: () => void;
+  /** L toggles light / stark. The values behind each are LIGHT_SETTINGS in presets.ts. */
+  lightSetting: LightSetting;
+  toggleLightSetting: () => void;
+  /** Index into LIGHT_LEVELS — the five-step brightness slider. */
+  lightLevel: number;
+  setLightLevel: (level: number) => void;
 
 
   pedestal: { widthCm: number; lengthCm: number; heightCm: number };
@@ -68,11 +69,11 @@ type ViewerState = {
   toggleStudioTheme: () => void;
 
   /**
-   * Hides the pedestal without moving the artifact, leaving it floating in space. The
-   * artifact keeps its seated height so toggling does not reframe the shot.
+   * P: standard (the theme's colour) → hidden → white. Hidden keeps the artifact at its
+   * seated height, floating, so changing mode never reframes the shot.
    */
-  pedestalVisible: boolean;
-  togglePedestal: () => void;
+  pedestalMode: PedestalMode;
+  cyclePedestal: () => void;
 
   /** Metadata only; the parsed scene graphs live in library/models.ts. */
   artifacts: ArtifactMeta[];
@@ -136,24 +137,15 @@ export const useViewer = create<ViewerState>((set) => ({
       },
     })),
 
-  lights: Object.fromEntries(
-    LIGHT_PRESETS.map((l) => [l.id, { on: l.on, intensity: l.intensity }]),
-  ),
-  toggleLight: (id) =>
-    set((s) => ({ lights: { ...s.lights, [id]: { ...s.lights[id], on: !s.lights[id].on } } })),
-  setLightIntensity: (id, v) =>
-    set((s) => ({ lights: { ...s.lights, [id]: { ...s.lights[id], intensity: v } } })),
-  cycleLightMode: () =>
+  lightSetting: 'light',
+  toggleLightSetting: () =>
     set((s) => {
-      const next = { studio: 'front', front: 'dramatic', dramatic: 'studio' }[lightMode(s.lights)];
-      return {
-        lights: {
-          ...s.lights,
-          front: { ...s.lights.front, on: next === 'front' },
-          dramatic: { ...s.lights.dramatic, on: next === 'dramatic' },
-        },
-      };
+      const i = LIGHT_SETTING_ORDER.indexOf(s.lightSetting);
+      return { lightSetting: LIGHT_SETTING_ORDER[(i + 1) % LIGHT_SETTING_ORDER.length] };
     }),
+  lightLevel: DEFAULT_LIGHT_LEVEL,
+  setLightLevel: (level) =>
+    set({ lightLevel: clamp(Math.round(level), 0, LIGHT_LEVELS.length - 1) }),
 
 
   pedestal: {
@@ -190,8 +182,12 @@ export const useViewer = create<ViewerState>((set) => ({
       return { studioTheme: STUDIO_THEME_ORDER[(i + 1) % STUDIO_THEME_ORDER.length] };
     }),
 
-  pedestalVisible: true,
-  togglePedestal: () => set((s) => ({ pedestalVisible: !s.pedestalVisible })),
+  pedestalMode: 'standard',
+  cyclePedestal: () =>
+    set((s) => {
+      const i = PEDESTAL_MODE_ORDER.indexOf(s.pedestalMode);
+      return { pedestalMode: PEDESTAL_MODE_ORDER[(i + 1) % PEDESTAL_MODE_ORDER.length] };
+    }),
 
   artifacts: [],
   objectIndex: 0,
@@ -248,8 +244,11 @@ export function captureSettings(): SceneSettings {
   const s = useViewer.getState();
   return {
     pedestal: { ...s.pedestal },
-    pedestalVisible: s.pedestalVisible,
-    lights: structuredClone(s.lights),
+    // Kept for galleries opened by older builds, which only know visible or not.
+    pedestalVisible: s.pedestalMode !== 'hidden',
+    pedestalMode: s.pedestalMode,
+    lightSetting: s.lightSetting,
+    lightLevel: s.lightLevel,
     studioTheme: s.studioTheme,
     objectScale: s.objectScale,
     camIndex: s.camIndex,
@@ -263,10 +262,25 @@ export function applySettings(next: SceneSettings | null): void {
   if (!next) return;
   useViewer.setState((s) => ({
     pedestal: { ...s.pedestal, ...next.pedestal },
-    pedestalVisible: next.pedestalVisible ?? s.pedestalVisible,
-    // Merge rather than replace: a gallery from an older version may not know about
-    // lights added since, and those should keep their defaults.
-    lights: { ...s.lights, ...next.lights },
+    pedestalMode: PEDESTAL_MODE_ORDER.includes(next.pedestalMode as PedestalMode)
+      ? (next.pedestalMode as PedestalMode)
+      : next.pedestalVisible === false
+        ? 'hidden'
+        : 'standard',
+    // Galleries written before light / stark only have the old per-light switches; their
+    // dramatic switch is what stark replaced. Saved intensities are deliberately ignored:
+    // there was never a control for them, so they only carry the old, too-bright tuning.
+    lightSetting: LIGHT_SETTING_ORDER.includes(next.lightSetting as LightSetting)
+      ? (next.lightSetting as LightSetting)
+      : next.lights?.dramatic?.on
+        ? 'stark'
+        : 'light',
+    lightLevel:
+      Number.isInteger(next.lightLevel) &&
+      (next.lightLevel as number) >= 0 &&
+      (next.lightLevel as number) < LIGHT_LEVELS.length
+        ? (next.lightLevel as number)
+        : DEFAULT_LIGHT_LEVEL,
     // Checked against the known themes rather than trusted: the field is a plain string
     // in the gallery format, and a file written by a newer version may name one this
     // build has never heard of.

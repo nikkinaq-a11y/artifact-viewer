@@ -45,9 +45,10 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 - **[Artifact-Viewer-Handbook.pdf](Artifact-Viewer-Handbook.pdf)** — the non-technical guide for
   museum staff: the address, installing it as an offline app, adding objects, sharing a gallery.
   This is the document a curator gets handed, so it is the one that matters most when a user-facing
-  control changes. Current as of 2026-10-08: five front-facing camera angles, three `D` distances, the camera
-  height slider, three `L` light settings, `I` snapshots, the initial-letter key map, no walls,
-  and all four scenes.
+  control changes. Current as of 2026-10-11: five front-facing camera angles, three `D` distances, the camera
+  height slider, light / stark on `L` with a
+  five-step brightness slider, the three-way pedestal on `P`, `I` snapshots, the initial-letter key
+  map, no walls, and all four scenes.
   **Its source is [Artifact-Viewer-Handbook.html](Artifact-Viewer-Handbook.html)** — edit that, never
   the PDF, then re-print with:
   `'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless --disable-gpu
@@ -61,9 +62,9 @@ quote them. The user runs Unreal on a **separate Windows machine**, not this Mac
 
 ## Status
 
-Working: open-floor studio (no walls; fog in the background colour hides the floor edge), 5 front-facing camera presets (the object turns on R, so the camera stays in front) + three distances of each on `D` (Far default, then Mid, Near) + a camera-height slider on Upper/Lower (camera and target move together, angle held) + `I` PNG snapshot of the canvas + `L` cycling studio / front / dramatic light +
+Working: open-floor studio (no walls; fog in the background colour hides the floor edge), 5 front-facing camera presets (the object turns on R, so the camera stays in front) + three distances of each on `D` (Far default, then Mid, Near) + a camera-height slider on Upper/Lower (camera and target move together, angle held) + `I` PNG snapshot of the canvas + `L` light / stark with a five-step brightness slider on the right edge + `P` pedestal standard / hidden / white +
 click-drag orbit, pedestal in cm, stepped rotation, scale, dark/white/horizon/silhouette scene
-modes, collapsible scene readout, pedestal hide, front light, drag-and-drop import (FBX/GLB/glTF/
+modes, collapsible scene readout, drag-and-drop import (FBX/GLB/glTF/
 OBJ/STL/PLY/USD), IndexedDB library with gallery panel, gallery export/import as `.zip`, PWA
 offline install (auto-reloads onto new versions), downloadable Tauri Mac app with native Save.
 
@@ -125,9 +126,14 @@ metres. `src/lib/units.ts` converts at the boundary.
 **Rendering**
 - `RectAreaLightUniformsLib.init()` must run once or every rect light renders black.
 - **`RectAreaLight` cannot cast shadows** in three.js. The look and the shadowing are split: the
-  rect rig shapes, a separate targeted `spotLight` casts.
+  rect rig shapes, a separate targeted `spotLight` casts. **Keep the rect key low and let the spot
+  carry the key light**, because rect light fills the spot's shadow. When the rect key dominated,
+  pedestal shadows came out pale and patchy (fixed 2026-10-11, see `LIGHT_SETTINGS`).
 - **A `spotLight` with no `target` aims at the world origin** — the floor under the pedestal — which
   lights the pedestal instead of the artifact and flattens the composition.
+- **Pale scans clip first.** Texture brightness varies about 4× across the collection (Dogon Mask
+  is dark; the Dancer Doll, Rattle and Yoruba Staff are pale), and the materials are otherwise
+  identical. Tune lighting on a pale scan, not only on the masks.
 - There is no global illumination. The `bounce` light in `presets.ts` is a hand-placed stand-in for
   Lumen's bounce, and is the largest fidelity gap.
 

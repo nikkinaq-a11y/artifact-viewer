@@ -10,6 +10,7 @@ import { CameraRig } from './scene/CameraRig';
 import { ArtifactMesh } from './scene/ArtifactMesh';
 import { Snapshot } from './scene/Snapshot';
 import { HeightSlider } from './ui/HeightSlider';
+import { LightSlider } from './ui/LightSlider';
 import {
   CAMERA_DISTANCES,
   CAMERA_PRESETS,
@@ -18,7 +19,7 @@ import {
   ROTATION_STEPS,
   STUDIO_THEMES,
   cameraDistance,
-  lightMode,
+  LIGHT_LEVELS,
 } from './scene/presets';
 import { currentArtifact, useViewer } from './store';
 import { useKeybinds } from './ui/keybinds';
@@ -44,8 +45,9 @@ function Hud() {
   const showHelp = useViewer((s) => s.showHelp);
   const showHud = useViewer((s) => s.showHud);
   const toggleHud = useViewer((s) => s.toggleHud);
-  const pedestalVisible = useViewer((s) => s.pedestalVisible);
-  const mode = useViewer((s) => lightMode(s.lights));
+  const pedestalMode = useViewer((s) => s.pedestalMode);
+  const lightSetting = useViewer((s) => s.lightSetting);
+  const lightLevel = useViewer((s) => s.lightLevel);
   const theme = useViewer((s) => s.studioTheme);
   const artifacts = useViewer((s) => s.artifacts);
   const objectIndex = useViewer((s) => s.objectIndex);
@@ -99,10 +101,13 @@ function Hud() {
             </div>
             <div className="hud-row">
               <span className="hud-key">Pedestal</span>
-              {pedestalVisible ? (
-                `${pedestal.widthCm} × ${pedestal.lengthCm} × ${pedestal.heightCm} cm`
+              {pedestalMode === 'hidden' ? (
+                <span className="dim">hidden — P for white</span>
               ) : (
-                <span className="dim">hidden — P to show</span>
+                <>
+                  {`${pedestal.widthCm} × ${pedestal.lengthCm} × ${pedestal.heightCm} cm`}
+                  {pedestalMode === 'white' && <span className="dim"> · white</span>}
+                </>
               )}
             </div>
             <div className="hud-row">
@@ -121,7 +126,10 @@ function Hud() {
             ) : (
               <div className="hud-row">
                 <span className="hud-key">Lighting</span>
-                {mode}
+                {lightSetting}{' '}
+                <span className="dim">
+                  · {lightLevel + 1}/{LIGHT_LEVELS.length}
+                </span>
               </div>
             )}
             <div className="hud-hint">Tab for controls</div>
@@ -149,15 +157,16 @@ function Hud() {
             </li>
             <li><b>W</b> pedestal width <span className="dim">(Shift+W narrower)</span></li>
             <li><b>Z</b> pedestal depth <span className="dim">(Shift+Z shallower)</span></li>
-            <li><b>P</b> show / hide pedestal</li>
+            <li><b>P</b> pedestal — standard / hidden / white</li>
             <li>
-              <b>L</b> lighting — studio / front / dramatic{' '}
+              <b>L</b> lighting — light / stark{' '}
               <span className="dim">(no effect in silhouette)</span>
             </li>
             <li><b>B</b> scene — dark / white / horizon / silhouette</li>
             <li><b>I</b> save an image <span className="dim">(PNG snapshot, scene only)</span></li>
           </ul>
           <p className="dim">Click and drag to revolve · scroll to zoom</p>
+          <p className="dim">Brightness — the light slider on the right edge, five steps</p>
           <p className="dim">Upper and lower views: camera height slider on the right edge</p>
           <p className="dim">Gallery — top right corner</p>
           <p className="dim">Click the camera chip, lower left, to reduce this panel</p>
@@ -199,7 +208,7 @@ export default function App() {
   useKeybinds();
   const pedestalTop = cm(useViewer((s) => s.pedestal.heightCm));
   const theme = useViewer((s) => s.studioTheme);
-  const pedestalVisible = useViewer((s) => s.pedestalVisible);
+  const pedestalVisible = useViewer((s) => s.pedestalMode !== 'hidden');
   const setArtifacts = useViewer((s) => s.setArtifacts);
   const selectObject = useViewer((s) => s.selectObject);
   const importFiles = useImportFiles();
@@ -268,7 +277,11 @@ export default function App() {
       </Canvas>
 
       <Hud />
-      <HeightSlider />
+      {/* One column down the right edge, so the two sliders never overlap. */}
+      <div className="right-rail">
+        <HeightSlider />
+        <LightSlider />
+      </div>
       <Notice />
       <DropZone />
       {/* Always mounted — the tab is a permanent affordance and expands in place. */}

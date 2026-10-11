@@ -61,7 +61,7 @@ await page.waitForFunction(() => document.querySelector('.hud')?.textContent?.in
 });
 await settle(2500);
 
-console.log('2. staging the scene (pedestal taller, white background, front light on)');
+console.log('2. staging the scene (pedestal taller, white background, stark light on)');
 for (let i = 0; i < 4; i++) await page.keyboard.press('KeyH');
 await page.keyboard.press('KeyB');
 await page.keyboard.press('KeyL');
@@ -93,7 +93,7 @@ const names = Object.keys(entries);
 const manifest = JSON.parse(new TextDecoder().decode(entries['gallery.json']));
 console.log('    file:', zipPath.split('/').pop(), `(${(readFileSync(zipPath).length / 1048576).toFixed(1)} MB)`);
 console.log('    entries:', names.length, '| artifacts in manifest:', manifest.artifacts.length);
-console.log('    settings captured:', JSON.stringify(manifest.settings.pedestal), 'theme=' + manifest.settings.studioTheme, 'frontLight=' + manifest.settings.lights.front.on);
+console.log('    settings captured:', JSON.stringify(manifest.settings.pedestal), 'theme=' + manifest.settings.studioTheme, 'light=' + manifest.settings.lightSetting + ' level=' + manifest.settings.lightLevel);
 
 console.log('4. wiping the library');
 await page.evaluate(() => indexedDB.deleteDatabase('artifact-viewer'));
@@ -119,10 +119,10 @@ await page.screenshot({ path: join(outDir, 'restored.png') });
 // Four presses of H at the 5 cm step take the default 100 cm to 120 cm.
 const pedestalKept = /120 cm/.test(restored);
 const themeKept = await page.$$eval('.theme-light', (n) => n.length > 0);
-const frontKept = /Lighting\s*front/.test(restored);
+const frontKept = /Lighting\s*stark/.test(restored);
 console.log('    pedestal height restored:', pedestalKept);
 console.log('    white background restored:', themeKept);
-console.log('    front light restored:', frontKept);
+console.log('    stark light restored:', frontKept);
 
 console.log('6. offline reload (network disabled)');
 await client.send('Network.enable');

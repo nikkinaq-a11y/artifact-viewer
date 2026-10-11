@@ -622,13 +622,20 @@ body,
   background: rgba(0, 0, 0, 0.05);
 }
 
-/* Camera height — the tilted views only. A vertical slider on the right edge, up is
-   higher, centred top to bottom so it sits clear of the gallery tab and the readout. */
-.height-slider {
+/* The right edge: camera height (tilted views only) above light brightness. One column, so
+   the two never overlap; centred top to bottom, clear of the gallery tab and the readout. */
+.right-rail {
   position: absolute;
   right: 20px;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.rail-slider {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -642,38 +649,44 @@ body,
   font-size: 11px;
   color: rgba(255, 255, 255, 0.82);
   user-select: none;
+  pointer-events: auto;
 }
 
-.height-slider-label {
+.rail-slider-label {
   width: 64px;
   text-align: center;
   line-height: 1.35;
   color: rgba(255, 255, 255, 0.42);
 }
 
-.height-slider-value {
+.rail-slider-value {
   font-variant-numeric: tabular-nums;
 }
 
-.height-slider input {
+.rail-slider input {
   /* Vertical, with the maximum at the top. */
   writing-mode: vertical-lr;
   direction: rtl;
   width: 18px;
-  height: 220px;
+  height: 200px;
   margin: 4px 0 0;
   accent-color: #d8d8dc;
   cursor: ns-resize;
 }
 
-.on-light .height-slider {
+/* Five steps need far less travel than the camera's continuous range. */
+.rail-slider input.is-stepped {
+  height: 110px;
+}
+
+.on-light .rail-slider {
   background: rgba(255, 255, 255, 0.72);
   border-color: rgba(0, 0, 0, 0.1);
   color: rgba(0, 0, 0, 0.78);
 }
 
-.on-light .height-slider-label { color: rgba(0, 0, 0, 0.45); }
-.on-light .height-slider input { accent-color: #3a3a40; }
+.on-light .rail-slider-label { color: rgba(0, 0, 0, 0.45); }
+.on-light .rail-slider input { accent-color: #3a3a40; }
 
 /* Neutral confirmation — snapshot saved. Centred at the bottom, clear of the readout on
    the left and the error toast on the right. */
